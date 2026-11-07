@@ -36,13 +36,13 @@ button{cursor:pointer;font:inherit;font-weight:700;border:0;border-radius:11px;p
 <p class="muted">Entra con el correo y la contraseña de tu cuenta de prueba.</p>
 <label for="email">Correo electrónico</label><input id="email" type="email" autocomplete="username" placeholder="ana@prueba.com">
 <label for="password">Contraseña</label><input id="password" type="password" autocomplete="current-password" placeholder="Tu contraseña">
-<button id="loginBtn" class="primary">Entrar a QuizBattle →</button><p id="authStatus" class="status" role="status"></p>
+<button id="loginBtn" class="primary">Entrar a QuizBattle →</button><button id="registerBtn" class="secondary" style="width:100%;margin-top:10px">Crear cuenta nueva</button><p id="authStatus" class="status" role="status"></p>
 </section>
 <section id="appView" class="hidden">
 <div class="account panel"><div><div class="label">SESIÓN ACTIVA</div><strong id="userEmail"></strong></div><button id="logoutBtn" class="secondary small">Cerrar sesión</button></div>
 <div class="layout">
 <div class="stack">
-<section class="panel"><div class="label">PARTIDA INDIVIDUAL</div><h2>Juega y mejora tu récord</h2>
+<section id="setup" class="panel"><div class="label">PARTIDA INDIVIDUAL</div><h2>Juega y mejora tu récord</h2>
 <label for="category">Categoría</label><select id="category"><option value="futbol">⚽ Fútbol</option><option value="cultura">🌎 Cultura general</option><option value="ciencia">🔬 Ciencia</option><option value="videojuegos">🎮 Videojuegos</option></select>
 <button id="start" class="primary">Iniciar partida →</button></section>
 <section id="game" class="panel hidden"><div class="top"><span id="progress"></span><strong id="scoreLive"></strong></div><div class="track"><div id="bar"></div></div><h2 id="question"></h2><div id="answers"></div><p id="feedback" aria-live="polite"></p></section>
@@ -52,6 +52,7 @@ button{cursor:pointer;font:inherit;font-weight:700;border:0;border-radius:11px;p
 <button id="createChallenge" class="primary">Publicar desafío →</button><p id="challengeCreateStatus" class="status" role="status"></p></section>
 </div>
 <aside class="stack">
+<section class="panel"><div class="label">TU CUENTA</div><h2>⭐ Tus mejores puntuaciones</h2><p id="myRecordsStatus" class="status"></p><ol id="myRecords" class="list"></ol></section>
 <section class="panel"><div class="head"><div><div class="label">COMPETICIÓN</div><h2>🏅 Ranking global</h2></div><button id="refresh" class="secondary small">↻ Actualizar</button></div>
 <p id="rankingStatus" class="status"></p><ol id="ranking" class="list"></ol></section>
 <section class="panel"><div class="label">EN VIVO</div><h2>Desafíos disponibles</h2><p id="challengeStatus" class="status"></p><div id="openChallenges"></div>
