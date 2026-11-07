@@ -109,9 +109,16 @@ async function cargarRetos() {
         btn.onclick=()=>responderReto(reto,n,btn); card.append(btn);
       });
       abiertos.append(card);
+    } else if (respuesta && respuesta.usuario_id===usuario.id) {
+      const card=document.createElement('article'); card.className='challenge-card';
+      const heading=document.createElement('b'); heading.textContent=nombresCategoria[reto.categoria]+' · Ya respondiste';
+      const q=document.createElement('p'); q.textContent=reto.pregunta;
+      const state=document.createElement('p'); state.className='status';
+      state.textContent='Tu respuesta: '+reto.opciones[respuesta.opcion]+' — '+(respuesta.es_correcta?'¡Correcta!':'Incorrecta.');
+      card.append(heading,q,state); abiertos.append(card);
     }
   });
-  if (!cantidadAbiertos) abiertos.innerHTML='<p class="muted">No hay desafíos pendientes de otros jugadores. ¡Crea uno!</p>';
+  if (!cantidadAbiertos && !abiertos.children.length) abiertos.innerHTML='<p class="muted">No hay desafíos pendientes de otros jugadores. ¡Crea uno!</p>';
   if (!cantidadPropios) propios.innerHTML='<p class="muted">Todavía no has creado desafíos.</p>';
   aviso('challengeStatus',cantidadAbiertos+' desafío(s) disponible(s) para responder.');
 }
