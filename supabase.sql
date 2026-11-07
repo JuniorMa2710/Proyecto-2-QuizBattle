@@ -42,7 +42,7 @@ create policy "cada usuario actualiza su resultado"
   using (usuario_id = (select auth.uid()))
   with check (usuario_id = (select auth.uid()));
 
-drop function if exists public.guardar_mejor_resultado(text, text, integer);
+drop function if exists public.guardar_mejor_resultado(text, integer);
 create function public.guardar_mejor_resultado(p_categoria text, p_aciertos integer)
 returns void
 language plpgsql
