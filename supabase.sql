@@ -55,11 +55,11 @@ declare
   v_nombre text;
 begin
   if v_usuario is null then raise exception 'Debes iniciar sesión'; end if;
-  if p_categoria not in ('futbol','cultura','ciencia','videojuegos')
-     or p_aciertos not between 0 and 5 then
+  if p_categoria is null or p_categoria not in ('futbol','cultura','ciencia','videojuegos')
+     or p_aciertos is null or p_aciertos not between 0 and 5 then
     raise exception 'Datos inválidos';
   end if;
-  v_nombre := coalesce(split_part(v_correo, '@', 1), 'Jugador');
+  v_nombre := left(coalesce(nullif(split_part(v_correo, '@', 1), ''), 'Jugador'), 24);
   insert into public.resultados(jugador, categoria, aciertos, puntos, usuario_id)
   values (v_nombre, p_categoria, p_aciertos, p_aciertos * 100, v_usuario)
   on conflict (usuario_id, categoria) where usuario_id is not null
@@ -73,6 +73,10 @@ end;
 $$;
 revoke all on function public.guardar_mejor_resultado(text, integer) from public, anon;
 grant execute on function public.guardar_mejor_resultado(text, integer) to authenticated;
+
+-- Índices para acelerar las búsquedas por creador y por jugador que responde.
+create index if not exists retos_creador_id_idx on public.retos(creador_id);
+create index if not exists respuestas_usuario_id_idx on public.respuestas(usuario_id);
 
 -- 2) Desafíos: una persona publica una pregunta y otra persona la responde.
 create table if not exists public.retos (
@@ -209,11 +213,11 @@ declare
   v_reto uuid;
 begin
   if auth.uid() is null then raise exception 'Debes iniciar sesión'; end if;
-  if p_categoria not in ('futbol','cultura','ciencia','videojuegos')
-     or length(btrim(p_pregunta)) = 0
-     or jsonb_typeof(p_opciones) <> 'array'
+  if p_categoria is null or p_categoria not in ('futbol','cultura','ciencia','videojuegos')
+     or p_pregunta is null or length(btrim(p_pregunta)) = 0
+     or p_opciones is null or jsonb_typeof(p_opciones) <> 'array'
      or jsonb_array_length(p_opciones) <> 4
-     or p_respuesta_correcta not between 0 and 3 then
+     or p_respuesta_correcta is null or p_respuesta_correcta not between 0 and 3 then
     raise exception 'Datos del desafío inválidos';
   end if;
   insert into public.retos(creador_id,categoria,pregunta,opciones)
