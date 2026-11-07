@@ -18,7 +18,7 @@ drop policy if exists "cada usuario inserta su resultado" on public.resultados;
 drop policy if exists "cada usuario actualiza su resultado" on public.resultados;
 
 revoke all on table public.resultados from anon;
-grant select, insert, update on table public.resultados to authenticated;
+grant select, insert, update on table public.resultados to authenticated;\ngrant usage, select on sequence public.resultados_id_seq to authenticated;
 
 create policy "ranking visible para usuarios"
   on public.resultados for select to authenticated using (true);
@@ -223,7 +223,7 @@ declare
   v_correcta boolean;
 begin
   if auth.uid() is null then raise exception 'Debes iniciar sesión'; end if;
-  if p_opcion not between 0 and 3 then raise exception 'Opción inválida'; end if;
+  if p_reto_id is null or p_opcion is null or p_opcion not between 0 and 3 then raise exception 'Opción inválida'; end if;
   insert into public.respuestas(reto_id,usuario_id,opcion)
   values(p_reto_id,auth.uid(),p_opcion)
   returning es_correcta into v_correcta;
