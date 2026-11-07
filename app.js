@@ -32,21 +32,26 @@ const preguntas = {
   ]
 };
 const nombresCategoria = { futbol:'⚽ Fútbol', cultura:'🌎 Cultura general', ciencia:'🔬 Ciencia', videojuegos:'🎮 Videojuegos' };
-let usuario = null, categoria = 'futbol', indice = 0, aciertos = 0, bloqueado = false, canal = null;
+let usuario = null, categoria = 'futbol', indice = 0, aciertos = 0, bloqueado = false, canal = null, usuarioActivoId = null;
 function aviso(id, mensaje, error=false) {
   const el = $(id); if (!el) return;
   el.textContent = mensaje; el.classList.toggle('error', error);
 }
 function mostrarApp(user) {
+  const cambioUsuario = usuarioActivoId !== user.id;
   usuario = user;
+  usuarioActivoId = user.id;
   $('authView').classList.add('hidden');
   $('appView').classList.remove('hidden');
   $('userEmail').textContent = user.email || 'Jugador';
-  cargarDatos();
-  conectarTiempoReal();
+  if (cambioUsuario) {
+    cargarDatos();
+    conectarTiempoReal();
+  }
 }
 function mostrarLogin() {
   usuario = null;
+  usuarioActivoId = null;
   if (canal) { db.removeChannel(canal); canal = null; }
   $('appView').classList.add('hidden');
   $('authView').classList.remove('hidden');
@@ -58,12 +63,39 @@ async function entrar() {
   const { error } = await db.auth.signInWithPassword({ email, password });
   if (error) aviso('authStatus',error.message,true);
 }
+async function registrarse() {
+  const email = $('email').value.trim(), password = $('password').value;
+  if (!email || !password) return aviso('authStatus','Escribe tu correo y una contraseña.',true);
+  if (password.length < 6) return aviso('authStatus','La contraseña debe tener al menos 6 caracteres.',true);
+  aviso('authStatus','Creando tu cuenta…');
+  const { data, error } = await db.auth.signUp({ email, password });
+  if (error) { aviso('authStatus',error.message,true); return; }
+  if (data.session) aviso('authStatus','✅ Cuenta creada. Ya puedes entrar a QuizBattle.');
+  else aviso('authStatus','✅ Cuenta creada. Revisa tu correo para confirmar el registro y después inicia sesión.');
+}
 async function guardarPuntaje() {
   aviso('saveStatus','Guardando tu mejor puntuación…');
   const { error } = await db.rpc('guardar_mejor_resultado',{p_categoria:categoria,p_aciertos:aciertos});
   if (error) aviso('saveStatus','No se pudo guardar: '+error.message,true);
   else aviso('saveStatus','✅ Tu mejor puntuación quedó guardada en tu cuenta.');
-  await cargarRanking();
+  await cargarDatos();
+}
+async function cargarMiMejorPuntaje() {
+  const { data, error } = await db.from('resultados')
+    .select('categoria,puntos,aciertos,fecha')
+    .eq('usuario_id', usuario.id)
+    .order('puntos',{ascending:false});
+  if (error) { aviso('myRecordsStatus','No se pudieron cargar tus récords: '+error.message,true); return; }
+  const list=$('myRecords'); list.replaceChildren();
+  if (!data.length) { aviso('myRecordsStatus','Todavía no tienes puntuaciones guardadas.'); return; }
+  aviso('myRecordsStatus','Tus mejores resultados, guardados en tu cuenta.');
+  data.forEach(r=>{
+    const li=document.createElement('li'), left=document.createElement('div'), name=document.createElement('b'), sub=document.createElement('small'), pts=document.createElement('strong');
+    name.textContent=nombresCategoria[r.categoria]||r.categoria;
+    sub.textContent=r.aciertos+'/5 aciertos';
+    pts.textContent=r.puntos+' pts';
+    left.append(name,sub); li.append(left,pts); list.append(li);
+  });
 }
 async function cargarRanking() {
   const { data, error } = await db.from('resultados').select('jugador,categoria,puntos,fecha').order('puntos',{ascending:false}).order('fecha',{ascending:true}).limit(20);
@@ -122,14 +154,16 @@ async function cargarRetos() {
   if (!cantidadPropios) propios.innerHTML='<p class="muted">Todavía no has creado desafíos.</p>';
   aviso('challengeStatus',cantidadAbiertos+' desafío(s) disponible(s) para responder.');
 }
-async function cargarDatos() { await Promise.all([cargarRanking(),cargarRetos()]); }
+async function cargarDatos() { await Promise.all([cargarMiMejorPuntaje(),cargarRanking(),cargarRetos()]); }
 function conectarTiempoReal() {
   if (canal) db.removeChannel(canal);
   canal=db.channel('quizbattle-live-'+usuario.id)
     .on('postgres_changes',{event:'*',schema:'public',table:'retos'},()=>cargarRetos())
     .on('postgres_changes',{event:'*',schema:'public',table:'respuestas'},()=>cargarRetos())
-    .on('postgres_changes',{event:'*',schema:'public',table:'resultados'},()=>cargarRanking())
-    .subscribe();
+    .on('postgres_changes',{event:'*',schema:'public',table:'resultados'},()=>Promise.all([cargarMiMejorPuntaje(),cargarRanking()]))
+    .subscribe((status)=>{
+      if (status==='CHANNEL_ERROR' || status==='TIMED_OUT') aviso('challengeStatus','Conexión en vivo interrumpida. Usa Actualizar para consultar los cambios.',true);
+    });
 }
 function iniciarPartida() {
   categoria=$('category').value; indice=0; aciertos=0; bloqueado=false;
@@ -186,6 +220,7 @@ async function responderReto(reto,opcion,boton) {
 }
 async function salir() { await db.auth.signOut(); mostrarLogin(); }
 $('loginBtn').onclick=entrar;
+$('registerBtn').onclick=registrarse;
 $('password').addEventListener('keydown',e=>{if(e.key==='Enter') entrar();});
 $('logoutBtn').onclick=salir;
 $('start').onclick=iniciarPartida;
