@@ -23,9 +23,16 @@ Aplicación de preguntas y desafíos para varios usuarios. Cada persona inicia s
 - `respuestas`: registra la opción elegida por el segundo jugador y el resultado calculado por la base de datos.
 
 ## Configuración de Supabase
-1. Ejecutar una vez el contenido de `supabase.sql` en el proyecto QuizBattle.
-2. En Authentication > Users, crear dos usuarios de prueba con correos inventados y contraseña.
-3. Iniciar sesión en la aplicación con las cuentas creadas.
+1. La migración de `supabase.sql` ya está aplicada en el proyecto QuizBattle. Si se instala en otro proyecto, ejecutar el archivo una sola vez.
+2. En la pantalla de acceso, usar **Crear cuenta nueva** para registrar cada usuario de prueba con correo y contraseña.
+3. Si Supabase tiene activa la confirmación de correo, usar correos a los que se tenga acceso y confirmar el mensaje recibido antes de iniciar sesión. Si se desactiva la confirmación sólo para la demostración, pueden usarse correos ficticios.
+4. Abrir una segunda sesión en otro navegador o ventana privada para probar la interacción entre dos usuarios.
+
+## Enlaces
+- Aplicación de prueba: https://quizbattle-proyecto2-jmajebih3-oscarerubio55-5263.vercel.app
+- Repositorio: https://github.com/JuniorMa2710/Proyecto-2-QuizBattle
+- Rama de Proyecto 2: https://github.com/JuniorMa2710/Proyecto-2-QuizBattle/tree/proyecto-2-auth-duelos
+- Pull request de revisión: https://github.com/JuniorMa2710/Proyecto-2-QuizBattle/pull/1
 
 La aplicación sólo contiene la URL del proyecto y la clave publicable. Nunca debe colocarse una clave secreta en el navegador ni en GitHub.
 
