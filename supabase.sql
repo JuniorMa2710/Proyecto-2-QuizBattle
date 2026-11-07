@@ -1,6 +1,17 @@
 -- Proyecto 2: autenticación, datos por cuenta y desafíos entre dos usuarios.
 -- Ejecutar una sola vez en el proyecto Supabase QuizBattle.
 
+-- Crear también la estructura original si el proyecto fue restaurado sin tablas.
+create table if not exists public.resultados (
+  id bigint generated always as identity primary key,
+  jugador text not null check (char_length(jugador) between 1 and 80),
+  categoria text not null check (categoria in ('futbol','cultura','ciencia','videojuegos')),
+  aciertos integer not null check (aciertos between 0 and 5),
+  puntos integer not null check (puntos between 0 and 500 and puntos = aciertos * 100),
+  fecha timestamptz not null default now()
+);
+alter table public.resultados enable row level security;
+
 -- 1) Los resultados del Laboratorio 4 pasan a pertenecer a una cuenta.
 alter table public.resultados
   add column if not exists usuario_id uuid references auth.users(id) on delete cascade;
