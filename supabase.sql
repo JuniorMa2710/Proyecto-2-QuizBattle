@@ -18,7 +18,8 @@ drop policy if exists "cada usuario inserta su resultado" on public.resultados;
 drop policy if exists "cada usuario actualiza su resultado" on public.resultados;
 
 revoke all on table public.resultados from anon;
-grant select, insert, update on table public.resultados to authenticated;\ngrant usage, select on sequence public.resultados_id_seq to authenticated;
+grant select, insert, update on table public.resultados to authenticated;
+grant usage, select on sequence public.resultados_id_seq to authenticated;
 
 create policy "ranking visible para usuarios"
   on public.resultados for select to authenticated using (true);
