@@ -74,10 +74,6 @@ $$;
 revoke all on function public.guardar_mejor_resultado(text, integer) from public, anon;
 grant execute on function public.guardar_mejor_resultado(text, integer) to authenticated;
 
--- Índices para acelerar las búsquedas por creador y por jugador que responde.
-create index if not exists retos_creador_id_idx on public.retos(creador_id);
-create index if not exists respuestas_usuario_id_idx on public.respuestas(usuario_id);
-
 -- 2) Desafíos: una persona publica una pregunta y otra persona la responde.
 create table if not exists public.retos (
   id uuid primary key default gen_random_uuid(),
@@ -101,6 +97,11 @@ create table if not exists public.respuestas (
   es_correcta boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+-- Índices para acelerar las búsquedas por creador y por jugador que responde.
+create index if not exists retos_creador_id_idx on public.retos(creador_id);
+create index if not exists respuestas_usuario_id_idx on public.respuestas(usuario_id);
+
 
 alter table public.retos enable row level security;
 alter table public.retos_claves enable row level security;
