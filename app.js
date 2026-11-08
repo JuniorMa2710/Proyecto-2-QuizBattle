@@ -43,7 +43,7 @@ function mostrarApp(user) {
   usuarioActivoId = user.id;
   $('authView').classList.add('hidden');
   $('appView').classList.remove('hidden');
-  $('userEmail').textContent = user.email || 'Jugador';
+  $('userDisplay').textContent = 'Cargando nombre de usuario…';
   if (cambioUsuario) {
     cargarDatos();
     conectarTiempoReal();
@@ -65,12 +65,18 @@ async function entrar() {
 }
 async function registrarse() {
   const email = $('email').value.trim(), password = $('password').value;
-  if (!email || !password) return aviso('authStatus','Escribe tu correo y una contraseña.',true);
+  const username = $('username').value.trim();
+  if (!email || !password || !username) return aviso('authStatus','Completa correo, contraseña y nombre de usuario.',true);
   if (password.length < 6) return aviso('authStatus','La contraseña debe tener al menos 6 caracteres.',true);
+  if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) return aviso('authStatus','El nombre debe tener 3 a 20 caracteres: letras, números o guion bajo.',true);
   aviso('authStatus','Creando tu cuenta…');
-  const { data, error } = await db.auth.signUp({ email, password });
+  const { data, error } = await db.auth.signUp({
+    email,
+    password,
+    options: { data: { username } }
+  });
   if (error) { aviso('authStatus',error.message,true); return; }
-  if (data.session) aviso('authStatus','✅ Cuenta creada. Ya puedes entrar a QuizBattle.');
+  if (data.session) aviso('authStatus','✅ Cuenta creada. Tu nombre de usuario es @'+username+'.');
   else aviso('authStatus','✅ Cuenta creada. Revisa tu correo para confirmar el registro y después inicia sesión.');
 }
 async function guardarPuntaje() {
@@ -79,6 +85,18 @@ async function guardarPuntaje() {
   if (error) aviso('saveStatus','No se pudo guardar: '+error.message,true);
   else aviso('saveStatus','✅ Tu mejor puntuación quedó guardada en tu cuenta.');
   await cargarDatos();
+}
+async function cargarPerfil() {
+  const { data, error } = await db.from('perfiles')
+    .select('username')
+    .eq('user_id', usuario.id)
+    .single();
+  if (error) {
+    aviso('profileStatus','No se pudo cargar tu perfil: '+error.message,true);
+    return;
+  }
+  $('userDisplay').textContent = '@'+data.username;
+  aviso('profileStatus','Tu nombre único en QuizBattle');
 }
 async function cargarMiMejorPuntaje() {
   const { data, error } = await db.from('resultados')
@@ -98,21 +116,50 @@ async function cargarMiMejorPuntaje() {
   });
 }
 async function cargarRanking() {
-  const { data, error } = await db.from('resultados').select('jugador,categoria,puntos,fecha').order('puntos',{ascending:false}).order('fecha',{ascending:true}).limit(20);
-  if (error) { aviso('rankingStatus','No se pudo cargar el ranking: '+error.message,true); return; }
-  aviso('rankingStatus',data.length ? 'Mejores resultados de los jugadores' : 'Todavía no hay resultados.');
-  $('ranking').replaceChildren();
-  data.forEach((r,i)=>{
-    const li=document.createElement('li'), left=document.createElement('div'), title=document.createElement('b'), sub=document.createElement('small'), pts=document.createElement('strong');
-    title.textContent=(i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'#'+(i+1)+' ')+r.jugador;
-    sub.textContent=nombresCategoria[r.categoria]||r.categoria; pts.textContent=r.puntos+' pts';
-    left.append(title,sub); li.append(left,pts); $('ranking').append(li);
+  const { data, error } = await db.from('resultados')
+    .select('categoria,puntos,aciertos,fecha,perfil:perfiles!resultados_usuario_id_perfiles_fkey(username)')
+    .order('puntos',{ascending:false}).order('fecha',{ascending:true}).limit(100);
+  if (error) { aviso('rankingStatus','No se pudieron cargar los rankings: '+error.message,true); return; }
+  aviso('rankingStatus','Cada categoría tiene su propia clasificación. Solo se muestra el mejor récord de cada jugador.');
+  Object.keys(nombresCategoria).forEach(cat => {
+    const list = $('ranking-'+cat);
+    list.replaceChildren();
+    const rows = (data||[]).filter(r=>r.categoria===cat).slice(0,10);
+    if (!rows.length) {
+      const empty=document.createElement('li'); empty.className='muted';
+      empty.textContent='Todavía no hay puntuaciones.'; list.append(empty); return;
+    }
+    rows.forEach((r,i)=>{
+      const li=document.createElement('li'), left=document.createElement('div'), title=document.createElement('b'), sub=document.createElement('small'), pts=document.createElement('strong');
+      title.textContent=(i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'#'+(i+1)+' ')+(r.perfil?.username ? '@'+r.perfil.username : 'Jugador');
+      sub.textContent=r.aciertos+'/5 respuestas correctas'; pts.textContent=r.puntos+' pts';
+      left.append(title,sub); li.append(left,pts); list.append(li);
+    });
   });
 }
+async function cargarRankingDesafios() {
+  const { data, error } = await db.from('puntuacion_desafios')
+    .select('puntos,correctas,respuestas,perfil:perfiles(username)')
+    .order('puntos',{ascending:false}).order('correctas',{ascending:false}).order('respuestas',{ascending:false}).limit(10);
+  if (error) { aviso('liveRankingStatus','No se pudo cargar el ranking de desafíos: '+error.message,true); return; }
+  const list=$('liveRanking'); list.replaceChildren();
+  if (!data?.length) {
+    const empty=document.createElement('li'); empty.className='muted';
+    empty.textContent='Todavía no hay respuestas en desafíos nuevos.'; list.append(empty);
+    aviso('liveRankingStatus','Cada respuesta correcta suma 100 puntos.'); return;
+  }
+  data.forEach((r,i)=>{
+    const li=document.createElement('li'), left=document.createElement('div'), title=document.createElement('b'), sub=document.createElement('small'), pts=document.createElement('strong');
+    title.textContent=(i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'#'+(i+1)+' ')+(r.perfil?.username ? '@'+r.perfil.username : 'Jugador');
+    sub.textContent=r.correctas+' correctas de '+r.respuestas+' desafíos'; pts.textContent=r.puntos+' pts';
+    left.append(title,sub); li.append(left,pts); list.append(li);
+  });
+  aviso('liveRankingStatus','Puntuación acumulada por respuestas correctas.');
+}
 async function cargarRetos() {
-  const { data: retos, error } = await db.from('retos').select('id,creador_id,categoria,pregunta,opciones,estado,created_at').order('created_at',{ascending:false}).limit(30);
+  const { data: retos, error } = await db.from('retos').select('id,creador_id,categoria,pregunta,opciones,estado,created_at,creador:perfiles!retos_creador_id_perfiles_fkey(username)').order('created_at',{ascending:false}).limit(30);
   if (error) { aviso('challengeStatus','No se pudieron cargar los desafíos: '+error.message,true); return; }
-  const { data: respuestas, error: errRes } = await db.from('respuestas').select('reto_id,usuario_id,opcion,es_correcta,created_at');
+  const { data: respuestas, error: errRes } = await db.from('respuestas').select('reto_id,usuario_id,opcion,es_correcta,created_at,respondedor:perfiles!respuestas_usuario_id_perfiles_fkey(username)');
   if (errRes) { aviso('challengeStatus','No se pudieron consultar las respuestas: '+errRes.message,true); return; }
   const porReto = new Map((respuestas||[]).map(r=>[r.reto_id,r]));
   const abiertos = $('openChallenges'), propios = $('myChallenges');
@@ -127,13 +174,13 @@ async function cargarRetos() {
       const q=document.createElement('p'); q.textContent=reto.pregunta;
       const state=document.createElement('p'); state.className='status';
       if (respuesta) {
-        state.textContent='✅ Otro jugador respondió: '+reto.opciones[respuesta.opcion]+' — '+(respuesta.es_correcta?'¡Respuesta correcta!':'Respuesta incorrecta.');
+        state.textContent='✅ @'+(respuesta.respondedor?.username||'Jugador')+' respondió: '+reto.opciones[respuesta.opcion]+' — '+(respuesta.es_correcta?'¡Respuesta correcta!':'Respuesta incorrecta.');
       } else state.textContent='⏳ Esperando la respuesta de otro jugador…';
       card.append(heading,q,state); propios.append(card);
     } else if (reto.estado==='abierto' && !respuesta) {
       cantidadAbiertos++;
       const card=document.createElement('article'); card.className='challenge-card';
-      const heading=document.createElement('b'); heading.textContent=nombresCategoria[reto.categoria]+' · Desafío disponible';
+      const heading=document.createElement('b'); heading.textContent=nombresCategoria[reto.categoria]+' · Desafío de @'+(reto.creador?.username||'Jugador');
       const q=document.createElement('p'); q.textContent=reto.pregunta;
       card.append(heading,q);
       reto.opciones.forEach((opcion,n)=>{
@@ -143,7 +190,7 @@ async function cargarRetos() {
       abiertos.append(card);
     } else if (respuesta && respuesta.usuario_id===usuario.id) {
       const card=document.createElement('article'); card.className='challenge-card';
-      const heading=document.createElement('b'); heading.textContent=nombresCategoria[reto.categoria]+' · Ya respondiste';
+      const heading=document.createElement('b'); heading.textContent=nombresCategoria[reto.categoria]+' · Respondiste a @'+(reto.creador?.username||'Jugador');
       const q=document.createElement('p'); q.textContent=reto.pregunta;
       const state=document.createElement('p'); state.className='status';
       state.textContent='Tu respuesta: '+reto.opciones[respuesta.opcion]+' — '+(respuesta.es_correcta?'¡Correcta!':'Incorrecta.');
@@ -154,13 +201,14 @@ async function cargarRetos() {
   if (!cantidadPropios) propios.innerHTML='<p class="muted">Todavía no has creado desafíos.</p>';
   aviso('challengeStatus',cantidadAbiertos+' desafío(s) disponible(s) para responder.');
 }
-async function cargarDatos() { await Promise.all([cargarMiMejorPuntaje(),cargarRanking(),cargarRetos()]); }
+async function cargarDatos() { await Promise.all([cargarPerfil(),cargarMiMejorPuntaje(),cargarRanking(),cargarRankingDesafios(),cargarRetos()]); }
 function conectarTiempoReal() {
   if (canal) db.removeChannel(canal);
   canal=db.channel('quizbattle-live-'+usuario.id)
     .on('postgres_changes',{event:'*',schema:'public',table:'retos'},()=>cargarRetos())
     .on('postgres_changes',{event:'*',schema:'public',table:'respuestas'},()=>cargarRetos())
     .on('postgres_changes',{event:'*',schema:'public',table:'resultados'},()=>Promise.all([cargarMiMejorPuntaje(),cargarRanking()]))
+    .on('postgres_changes',{event:'*',schema:'public',table:'puntuacion_desafios'},()=>cargarRankingDesafios())
     .subscribe((status)=>{
       if (status==='CHANNEL_ERROR' || status==='TIMED_OUT') aviso('challengeStatus','Conexión en vivo interrumpida. Usa Actualizar para consultar los cambios.',true);
     });
