@@ -37,7 +37,24 @@ function aviso(id, mensaje, error=false) {
   const el = $(id); if (!el) return;
   el.textContent = mensaje; el.classList.toggle('error', error);
 }
-function mostrarApp(user) {
+async function mostrarApp(user) {
+  // Asegura que una sesión antigua no siga entrando después de reiniciar una cuenta.
+  const { data: perfil, error: errorPerfil } = await db.from('perfiles')
+    .select('user_id')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (errorPerfil) {
+    aviso('authStatus','No se pudo verificar tu perfil. Inténtalo de nuevo.',true);
+    return;
+  }
+  if (!perfil) {
+    await db.auth.signOut();
+    mostrarLogin();
+    aviso('authStatus','Esta cuenta fue reiniciada. Crea nuevamente tu cuenta para entrar.',true);
+    return;
+  }
+
   const cambioUsuario = usuarioActivoId !== user.id;
   usuario = user;
   usuarioActivoId = user.id;
