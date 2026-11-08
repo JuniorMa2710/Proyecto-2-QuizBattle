@@ -60,6 +60,9 @@ button{cursor:pointer}
 .sidebar-promo strong{display:block;margin-top:7px;font-size:1rem}
 .sidebar-promo p{margin:6px 0 0;color:#bd8aff;font-size:.88rem;font-weight:800;font-style:italic}
 .page-body{min-width:0;padding:3px 0 20px}
+body:has(#authView:not(.hidden)) .sidebar{display:none}
+body:has(#authView:not(.hidden)) .app-frame{grid-template-columns:minmax(0,1fr);max-width:620px;padding:16px}
+body:has(#authView:not(.hidden)) .page-body{padding:0}
 #authView{max-width:480px;margin:8vh auto 0;padding:34px;border-radius:25px;position:relative;overflow:hidden;border:1px solid var(--line);background:linear-gradient(145deg,rgba(28,18,51,.97),rgba(11,9,23,.98));box-shadow:0 22px 75px rgba(0,0,0,.42)}
 #authView:before{content:"";position:absolute;width:260px;height:260px;right:-130px;top:-135px;border-radius:50%;background:rgba(132,60,255,.2);filter:blur(5px);pointer-events:none}
 #authView>div,#authView>p{position:relative}
