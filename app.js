@@ -117,9 +117,19 @@ async function cargarMiMejorPuntaje() {
 }
 async function cargarRanking() {
   const { data, error } = await db.from('resultados')
-    .select('categoria,puntos,aciertos,fecha,perfil:perfiles!resultados_usuario_id_perfiles_fkey(username)')
+    .select('usuario_id,categoria,puntos,aciertos,fecha')
     .order('puntos',{ascending:false}).order('fecha',{ascending:true}).limit(100);
   if (error) { aviso('rankingStatus','No se pudieron cargar los rankings: '+error.message,true); return; }
+
+  const ids = [...new Set((data||[]).map(r=>r.usuario_id).filter(Boolean))];
+  let nombres = new Map();
+  if (ids.length) {
+    const { data: perfiles, error: errorPerfiles } = await db.from('perfiles')
+      .select('user_id,username').in('user_id',ids);
+    if (errorPerfiles) { aviso('rankingStatus','No se pudieron cargar los nombres de usuario: '+errorPerfiles.message,true); return; }
+    nombres = new Map((perfiles||[]).map(p=>[p.user_id,p.username]));
+  }
+
   aviso('rankingStatus','Cada categoría tiene su propia clasificación. Solo se muestra el mejor récord de cada jugador.');
   Object.keys(nombresCategoria).forEach(cat => {
     const list = $('ranking-'+cat);
@@ -131,7 +141,8 @@ async function cargarRanking() {
     }
     rows.forEach((r,i)=>{
       const li=document.createElement('li'), left=document.createElement('div'), title=document.createElement('b'), sub=document.createElement('small'), pts=document.createElement('strong');
-      title.textContent=(i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'#'+(i+1)+' ')+(r.perfil?.username ? '@'+r.perfil.username : 'Jugador');
+      const username = nombres.get(r.usuario_id);
+      title.textContent=(i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'#'+(i+1)+' ')+(username ? '@'+username : 'Jugador');
       sub.textContent=r.aciertos+'/5 respuestas correctas'; pts.textContent=r.puntos+' pts';
       left.append(title,sub); li.append(left,pts); list.append(li);
     });
@@ -139,9 +150,19 @@ async function cargarRanking() {
 }
 async function cargarRankingDesafios() {
   const { data, error } = await db.from('puntuacion_desafios')
-    .select('puntos,correctas,respuestas,perfil:perfiles(username)')
+    .select('usuario_id,puntos,correctas,respuestas')
     .order('puntos',{ascending:false}).order('correctas',{ascending:false}).order('respuestas',{ascending:false}).limit(10);
   if (error) { aviso('liveRankingStatus','No se pudo cargar el ranking de desafíos: '+error.message,true); return; }
+
+  const ids = [...new Set((data||[]).map(r=>r.usuario_id).filter(Boolean))];
+  let nombres = new Map();
+  if (ids.length) {
+    const { data: perfiles, error: errorPerfiles } = await db.from('perfiles')
+      .select('user_id,username').in('user_id',ids);
+    if (errorPerfiles) { aviso('liveRankingStatus','No se pudieron cargar los nombres de usuario: '+errorPerfiles.message,true); return; }
+    nombres = new Map((perfiles||[]).map(p=>[p.user_id,p.username]));
+  }
+
   const list=$('liveRanking'); list.replaceChildren();
   if (!data?.length) {
     const empty=document.createElement('li'); empty.className='muted';
@@ -150,7 +171,8 @@ async function cargarRankingDesafios() {
   }
   data.forEach((r,i)=>{
     const li=document.createElement('li'), left=document.createElement('div'), title=document.createElement('b'), sub=document.createElement('small'), pts=document.createElement('strong');
-    title.textContent=(i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'#'+(i+1)+' ')+(r.perfil?.username ? '@'+r.perfil.username : 'Jugador');
+    const username = nombres.get(r.usuario_id);
+    title.textContent=(i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'#'+(i+1)+' ')+(username ? '@'+username : 'Jugador');
     sub.textContent=r.correctas+' correctas de '+r.respuestas+' desafíos'; pts.textContent=r.puntos+' pts';
     left.append(title,sub); li.append(left,pts); list.append(li);
   });
