@@ -1,14 +1,17 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>QuizBattle | Proyecto 2</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080611">
+<title>QuizBattle | Compite con tu conocimiento</title>
 <style>
 :root{
   color-scheme:dark;
-  --bg:#080d1c;--surface:#111a30;--surface-2:#16223d;--line:rgba(157,181,255,.15);
-  --text:#f4f6ff;--muted:#9ba9c8;--blue:#6d8cff;--violet:#a46bff;--cyan:#54d6e8;
-  --green:#43d7a0;--red:#ff8198;--radius:22px;
+  --bg:#070610;--panel:#100d20;--panel-2:#17112b;--line:rgba(170,128,255,.2);
+  --text:#f7f4ff;--muted:#a7a0bd;--purple:#8b35ff;--purple-2:#5c16d8;
+  --blue:#2d9bff;--cyan:#4bd9ff;--gold:#ffc55b;--green:#39dfa3;--red:#ff718b;
+  --radius:22px;
   font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 *{box-sizing:border-box}
@@ -16,149 +19,255 @@ html{min-height:100%;scroll-behavior:smooth}
 body{
   margin:0;min-height:100vh;color:var(--text);overflow-x:hidden;
   background:
-    radial-gradient(ellipse at 12% -10%,rgba(76,105,231,.25),transparent 38%),
-    radial-gradient(ellipse at 94% 12%,rgba(151,76,229,.18),transparent 34%),
-    radial-gradient(ellipse at 52% 110%,rgba(34,157,181,.10),transparent 42%),var(--bg);
+    radial-gradient(ellipse at 48% -14%,rgba(111,35,219,.27),transparent 42%),
+    radial-gradient(ellipse at 100% 34%,rgba(24,104,209,.14),transparent 36%),
+    radial-gradient(ellipse at 6% 100%,rgba(93,16,178,.16),transparent 35%),var(--bg);
 }
 body:before{
-  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.18;
-  background-image:linear-gradient(rgba(155,177,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(155,177,255,.08) 1px,transparent 1px);
-  background-size:44px 44px;mask-image:linear-gradient(to bottom,black,transparent 82%);
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.19;
+  background-image:linear-gradient(rgba(166,127,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(166,127,255,.08) 1px,transparent 1px);
+  background-size:46px 46px;mask-image:linear-gradient(to bottom,black,transparent 88%);
 }
-.shell{width:min(1180px,100%);margin:auto;padding:34px 22px 24px}
-header{text-align:center;margin:12px 0 34px;position:relative}
-header .label{
-  display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border:1px solid rgba(122,151,255,.25);
-  border-radius:999px;background:rgba(54,76,143,.18);font-size:.69rem;letter-spacing:.18em;font-weight:850;color:#aebeff;
+button,input,select{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.app-frame{min-height:100vh;display:grid;grid-template-columns:248px minmax(0,1fr);gap:22px;padding:16px 20px 16px 16px;max-width:1900px;margin:auto}
+.sidebar{
+  position:sticky;top:16px;height:calc(100vh - 32px);min-height:680px;align-self:start;
+  display:flex;flex-direction:column;padding:24px 17px 18px;overflow:hidden;
+  border:1px solid rgba(160,111,255,.22);border-radius:25px;
+  background:linear-gradient(180deg,rgba(18,12,37,.97),rgba(8,7,19,.97));
+  box-shadow:0 18px 65px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.04);
 }
-header h1{font-size:clamp(3.1rem,8vw,5.4rem);letter-spacing:-.075em;line-height:1;margin:18px 0 12px;font-weight:950;text-shadow:0 8px 45px rgba(105,111,255,.2)}
-header h1 span{background:linear-gradient(100deg,#91a9ff 5%,#b38aff 52%,#67d9e8 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
-header p{margin:0;color:var(--muted);font-size:1rem}
-.label{font-size:.7rem;letter-spacing:.16em;font-weight:850;color:#9db2ff;text-transform:uppercase}
-.panel{
-  position:relative;min-width:0;padding:25px;border-radius:var(--radius);
-  border:1px solid var(--line);
-  background:linear-gradient(145deg,rgba(22,33,59,.94),rgba(12,20,39,.96));
-  box-shadow:0 18px 55px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.035);
-  backdrop-filter:blur(14px);
+.sidebar:after{content:"";position:absolute;left:-95px;bottom:-135px;width:300px;height:300px;border:1px solid rgba(128,48,255,.27);border-radius:50%;box-shadow:0 0 55px rgba(120,40,255,.16);pointer-events:none}
+.brand{display:flex;align-items:center;gap:12px;padding:2px 4px 34px;position:relative;z-index:1}
+.brand-mark{width:54px;height:54px;display:grid;place-items:center;border-radius:17px;font-size:33px;font-weight:1000;color:white;background:linear-gradient(145deg,#b147ff,#4c19cb);box-shadow:0 0 24px rgba(143,48,255,.45);transform:skew(-5deg)}
+.brand-name{font-size:1.35rem;font-weight:950;letter-spacing:-.06em;font-style:italic}
+.brand-name span{color:#b568ff}
+.nav-label{padding:0 12px 9px;color:#786b96;font-size:.65rem;font-weight:900;letter-spacing:.18em}
+.nav{display:grid;gap:8px;position:relative;z-index:1}
+.nav a,.nav button{
+  display:flex;align-items:center;gap:13px;min-height:49px;width:100%;padding:11px 14px;
+  color:#c8c1d9;text-decoration:none;text-align:left;font-size:.91rem;font-weight:700;
+  border:1px solid transparent;border-radius:13px;background:transparent;transition:.18s ease;
 }
-.panel h2{font-size:1.28rem;letter-spacing:-.035em;line-height:1.2;margin:9px 0 14px}
-.panel p{line-height:1.55}
-.layout{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(360px,.92fr);gap:20px;align-items:start}
-.stack{display:grid;gap:18px;min-width:0}
-h2{color:var(--text)}
-label{display:block;margin:16px 0 8px;color:#cbd5ed;font-weight:700;font-size:.88rem}
-input,select{
-  width:100%;padding:14px 15px;font:inherit;font-size:.95rem;color:var(--text);
-  background:rgba(5,11,25,.7);border:1px solid rgba(139,160,215,.23);border-radius:13px;outline:none;
-  transition:border-color .2s,box-shadow .2s,background .2s;
-}
-input::placeholder{color:#667594}
-input:hover,select:hover{border-color:rgba(125,153,255,.48)}
-input:focus,select:focus{border-color:#8299ff;box-shadow:0 0 0 4px rgba(109,140,255,.13);background:#0b1429}
-button{
-  cursor:pointer;font:inherit;font-weight:800;border:1px solid transparent;border-radius:13px;padding:13px 16px;
-  transition:transform .18s,box-shadow .18s,filter .18s,border-color .18s,background .18s;
-}
-button:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.08)}
-button:active:not(:disabled){transform:translateY(0)}
-button:focus-visible{outline:3px solid rgba(104,205,231,.65);outline-offset:3px}
-button:disabled{cursor:not-allowed;opacity:.58}
-.primary{
-  color:white;background:linear-gradient(105deg,#5a78f4,#8c5ae5 58%,#6b7af7);
-  box-shadow:0 9px 24px rgba(94,105,232,.25),inset 0 1px 0 rgba(255,255,255,.18);
-  width:100%;margin-top:18px;
-}
-.primary:hover:not(:disabled){box-shadow:0 13px 30px rgba(94,105,232,.36)}
-.secondary,.answer{background:rgba(38,54,87,.76);color:#e9efff;border:1px solid rgba(139,165,226,.2)}
-.secondary:hover:not(:disabled){border-color:rgba(139,165,255,.48);background:rgba(54,72,115,.82)}
-#authView{max-width:480px!important;padding:30px!important;overflow:hidden}
-#authView:before{content:"";position:absolute;width:230px;height:230px;right:-105px;top:-115px;border-radius:50%;background:rgba(116,105,255,.13);filter:blur(2px);pointer-events:none}
+.nav a span,.nav button span{width:22px;text-align:center;font-size:1.1rem}
+.nav a:hover,.nav button:hover{background:rgba(119,62,204,.15);border-color:rgba(172,115,255,.18);color:white}
+.nav a.active{color:white;background:linear-gradient(100deg,#711cf0,#43128e);border-color:rgba(206,166,255,.22);box-shadow:0 8px 22px rgba(104,27,224,.28)}
+.sidebar-spacer{flex:1}
+.sidebar-promo{position:relative;z-index:1;margin:24px 0 4px;padding:20px 12px;border-radius:18px;text-align:center;border:1px solid rgba(143,62,255,.24);background:linear-gradient(155deg,rgba(84,25,159,.3),rgba(16,10,35,.3))}
+.sidebar-promo .crown{font-size:1.55rem;color:var(--gold)}
+.sidebar-promo strong{display:block;margin-top:7px;font-size:1rem}
+.sidebar-promo p{margin:6px 0 0;color:#bd8aff;font-size:.88rem;font-weight:800;font-style:italic}
+.page-body{min-width:0;padding:3px 0 20px}
+#authView{max-width:480px;margin:8vh auto 0;padding:34px;border-radius:25px;position:relative;overflow:hidden;border:1px solid var(--line);background:linear-gradient(145deg,rgba(28,18,51,.97),rgba(11,9,23,.98));box-shadow:0 22px 75px rgba(0,0,0,.42)}
+#authView:before{content:"";position:absolute;width:260px;height:260px;right:-130px;top:-135px;border-radius:50%;background:rgba(132,60,255,.2);filter:blur(5px);pointer-events:none}
 #authView>div,#authView>p{position:relative}
 #authView h2{font-size:1.8rem;margin:12px 0 8px}
 #authView .muted{margin-top:0}
 #authView .primary{min-height:50px}
 #authView .secondary{width:100%;margin-top:11px}
 #authStatus{margin:16px 0 0;min-height:1.2em}
-.hidden{display:none!important}
+.label{font-size:.67rem;letter-spacing:.17em;font-weight:900;color:#bd85ff;text-transform:uppercase}
 .muted,.status{color:var(--muted);font-size:.88rem}
 .error{color:var(--red)!important}
 .status{min-height:1.1em}
+label{display:block;margin:16px 0 8px;color:#d2c9e5;font-weight:750;font-size:.88rem}
+input,select{
+  width:100%;padding:14px 15px;color:var(--text);background:rgba(5,4,14,.72);
+  border:1px solid rgba(174,144,220,.24);border-radius:13px;outline:none;
+  transition:border-color .2s,box-shadow .2s,background .2s;
+}
+input::placeholder{color:#776e8f}
+input:focus,select:focus{border-color:#a66aff;box-shadow:0 0 0 4px rgba(144,73,255,.15);background:#100b20}
+button{border:1px solid transparent;border-radius:13px;padding:13px 16px;font-weight:850;transition:transform .18s,box-shadow .18s,filter .18s,border-color .18s,background .18s}
+button:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.08)}
+button:active:not(:disabled){transform:translateY(0)}
+button:focus-visible,a:focus-visible{outline:3px solid rgba(93,203,255,.7);outline-offset:3px}
+button:disabled{cursor:not-allowed;opacity:.58}
+.primary{color:white;background:linear-gradient(105deg,#791bfa,#a02dff 58%,#5335e9);box-shadow:0 9px 26px rgba(121,34,235,.36),inset 0 1px 0 rgba(255,255,255,.18)}
+.primary:hover:not(:disabled){box-shadow:0 13px 34px rgba(132,46,255,.5)}
+.secondary,.answer{background:rgba(39,27,65,.8);color:#eee7ff;border:1px solid rgba(178,143,236,.22)}
+.secondary:hover:not(:disabled){border-color:rgba(185,131,255,.55);background:rgba(70,40,110,.82)}
+.small{font-size:.8rem;padding:10px 13px}
+.workspace-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
+.main-column,.right-rail{display:grid;gap:18px;min-width:0}
+.hero{
+  min-height:330px;position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(230px,.85fr);
+  align-items:center;gap:10px;padding:32px 34px;border-radius:25px;
+  border:1px solid rgba(151,82,255,.31);
+  background:
+    radial-gradient(ellipse at 73% 50%,rgba(60,55,220,.36),transparent 39%),
+    radial-gradient(ellipse at 38% 115%,rgba(111,24,220,.4),transparent 55%),
+    linear-gradient(115deg,rgba(11,8,25,.98),rgba(14,10,34,.92) 54%,rgba(6,11,34,.97));
+  box-shadow:0 20px 65px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.04);
+}
+.hero:before{content:"";position:absolute;inset:0;z-index:-1;opacity:.36;background:linear-gradient(115deg,transparent 12%,rgba(113,42,222,.17) 46%,transparent 75%),repeating-linear-gradient(130deg,transparent 0 33px,rgba(133,92,255,.08) 34px 35px,transparent 36px 72px)}
+.hero-copy{position:relative;z-index:2}
+.hero-kicker{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border:1px solid rgba(177,130,255,.24);border-radius:999px;background:rgba(88,34,150,.24);color:#d5b4ff;font-size:.68rem;font-weight:900;letter-spacing:.14em}
+.hero h1{font-size:clamp(3.3rem,5.4vw,5.3rem);letter-spacing:-.085em;line-height:.96;margin:18px 0 12px;font-weight:1000;text-shadow:0 6px 38px rgba(111,67,255,.28)}
+.hero h1 span{background:linear-gradient(100deg,#fff 8%,#d9c4ff 38%,#9b42ff 72%,#5aaaff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-copy p{max-width:470px;color:#d2c7e7;font-size:1.05rem;line-height:1.5;margin:0 0 24px}
+.hero .primary{min-width:220px;min-height:52px;font-size:1rem}
+.hero-art{min-height:245px;position:relative;display:grid;place-items:center}
+.brain-orbit{position:absolute;width:255px;height:255px;border:2px solid rgba(132,93,255,.65);border-radius:50%;transform:rotate(-24deg) scaleY(.42);box-shadow:0 0 18px rgba(129,67,255,.55),inset 0 0 18px rgba(73,122,255,.35)}
+.brain-orbit:after{content:"";position:absolute;left:18%;top:-7px;width:13px;height:13px;border-radius:50%;background:#8de7ff;box-shadow:0 0 16px #48c9ff}
+.brain-glow{position:absolute;width:205px;height:205px;border-radius:50%;background:radial-gradient(circle,rgba(107,51,255,.44),rgba(30,97,255,.12) 48%,transparent 72%);filter:blur(4px)}
+.brain-symbol{position:relative;z-index:1;font-size:clamp(7rem,12vw,10.7rem);line-height:1;filter:drop-shadow(0 0 18px rgba(130,70,255,.8)) drop-shadow(0 0 35px rgba(52,145,255,.46));transform:rotate(-7deg)}
+.iq-tag{position:absolute;z-index:2;top:51%;left:50%;transform:translate(-50%,-50%);font-size:2.6rem;letter-spacing:-.07em;font-weight:1000;color:white;text-shadow:0 0 12px #50d4ff,0 0 25px #653cff;pointer-events:none}
+.brain-float{position:absolute;color:#9fe9ff;font-size:1.9rem;text-shadow:0 0 15px #418eff}
+.brain-float.one{top:6%;left:12%}.brain-float.two{right:7%;bottom:16%;color:#dcb5ff}.brain-float.three{left:10%;bottom:7%;font-size:1.5rem;color:#d5c1ff}
+.section-panel,.panel{
+  min-width:0;padding:21px;border:1px solid var(--line);border-radius:var(--radius);
+  background:linear-gradient(145deg,rgba(25,17,43,.95),rgba(12,10,24,.96));
+  box-shadow:0 15px 48px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.035);backdrop-filter:blur(14px);
+}
+.section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+.section-heading h2,.panel h2{font-size:1.2rem;letter-spacing:-.035em;line-height:1.2;margin:7px 0 0}
+.accent-mark{display:inline-block;width:5px;height:22px;background:linear-gradient(#c15dff,#6821e9);transform:skew(-18deg);margin-right:9px;vertical-align:-4px}
+.category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.category-card{
+  position:relative;isolation:isolate;min-height:174px;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:7px;
+  padding:16px;text-align:left;border-radius:17px;border:1px solid rgba(158,140,213,.24);
+  background:linear-gradient(145deg,rgba(21,35,53,.98),rgba(9,13,27,.98));color:white;
+}
+.category-card:before{content:"";position:absolute;inset:0;z-index:-1;opacity:.65;background:radial-gradient(circle at 70% 20%,var(--glow),transparent 57%),linear-gradient(145deg,transparent,rgba(0,0,0,.54))}
+.category-card:after{content:"";position:absolute;top:-40px;right:-30px;width:150px;height:150px;border-radius:50%;border:1px solid var(--glow);box-shadow:0 0 35px var(--glow);opacity:.45;z-index:-1}
+.category-card .cat-icon{font-size:3.4rem;line-height:1;filter:drop-shadow(0 0 14px var(--glow));margin-bottom:5px}
+.category-card strong{font-size:1rem;font-weight:900}
+.category-card small{font-size:.75rem;line-height:1.25;color:#c0bdd0}
+.category-card .arrow{position:absolute;right:13px;bottom:14px;width:27px;height:27px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--glow);color:var(--glow);font-size:1rem}
+.category-card[data-category="futbol"]{--glow:#50e78b;background-color:#0b291d}
+.category-card[data-category="ciencia"]{--glow:#43c8ff;background-color:#0c1e39}
+.category-card[data-category="videojuegos"]{--glow:#b65cff;background-color:#26113d}
+.category-card[data-category="cultura"]{--glow:#ffbe59;background-color:#33210e}
+.category-card.selected{border-color:var(--glow);box-shadow:0 0 0 1px var(--glow),0 0 24px color-mix(in srgb,var(--glow) 35%,transparent);transform:translateY(-3px)}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.profile-card{position:relative;overflow:hidden;padding:20px;border:1px solid rgba(174,104,255,.33);border-radius:22px;background:linear-gradient(145deg,rgba(35,17,63,.97),rgba(14,10,29,.98));box-shadow:0 16px 50px rgba(0,0,0,.3)}
+.profile-card:after{content:"";position:absolute;right:-55px;top:-90px;width:190px;height:190px;border-radius:50%;background:rgba(131,59,255,.19);filter:blur(2px);pointer-events:none}
+.profile-heading{display:flex;align-items:center;gap:9px;color:#d5b5ff;font-weight:900;font-size:1rem;position:relative;z-index:1}
+.profile-main{display:flex;align-items:center;gap:13px;margin:19px 0 13px;position:relative;z-index:1}
+.avatar{flex:0 0 58px;width:58px;height:58px;display:grid;place-items:center;border-radius:50%;font-size:1.65rem;background:radial-gradient(circle at 32% 25%,#a858ff,#3e16a0 64%,#160d35);border:2px solid rgba(202,157,255,.62);box-shadow:0 0 18px rgba(141,65,255,.38)}
+.profile-name{font-weight:900;font-size:1rem;overflow-wrap:anywhere}
+.profile-level{margin-top:5px;color:#b6adc9;font-size:.83rem}
+.profile-status{margin:8px 0 0}
+.account-actions{display:flex;justify-content:flex-end;position:relative;z-index:1}
+.track{height:7px;background:rgba(144,124,185,.2);border-radius:99px;margin:13px 0 6px;overflow:hidden}
+.track div{height:100%;width:0;background:linear-gradient(90deg,#8534ff,#54baff);border-radius:inherit;box-shadow:0 0 12px rgba(116,80,255,.6)}
+.record-panel .list{margin-top:10px}
+.list{padding:0;list-style:none;margin:12px 0 0}
+.list li{display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(41,27,68,.53);border:1px solid rgba(171,141,229,.11);padding:11px;border-radius:12px;margin-bottom:8px;min-width:0}
+.list li:last-child{margin-bottom:0}
+.list li>div{min-width:0}
+.list li b{font-weight:800;overflow-wrap:anywhere}
+.list small{display:block;color:#a79cbd;font-size:.73rem;margin-top:4px}
+.list strong{white-space:nowrap;color:#d3c2ff;font-weight:900;font-size:.81rem}
+.rank-panel .list{margin-top:8px}
+.rank-panel .list li{padding:8px;font-size:.81rem;background:rgba(9,7,19,.48);margin-bottom:6px}
+.rank-panel .list small{font-size:.67rem}
+.rank-panel .list strong{font-size:.75rem}
+.rank-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.rank-card{min-width:0;padding:12px;border-radius:14px;border:1px solid rgba(149,112,207,.17);background:linear-gradient(145deg,rgba(38,22,63,.8),rgba(14,11,27,.8))}
+.rank-card h3{font-size:.83rem;margin:0 0 8px;letter-spacing:-.01em}
+.rank-card .list{margin:0}
+.rank-card .list li{padding:8px;margin-bottom:5px;font-size:.75rem}
+.rank-card .list li b{font-size:.72rem}
+.rank-card .list small{font-size:.65rem}
+.rank-card .list strong{font-size:.69rem}
+.challenge-banner{
+  position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:20px;
+  padding:24px 26px;border-radius:21px;border:1px solid rgba(150,70,255,.36);
+  background:radial-gradient(ellipse at 72% 50%,rgba(89,37,213,.38),transparent 42%),linear-gradient(112deg,rgba(32,13,63,.98),rgba(10,14,39,.98));
+  box-shadow:0 16px 48px rgba(0,0,0,.28);
+}
+.challenge-banner:after{content:"⚡";position:absolute;right:26%;top:-32px;font-size:8rem;opacity:.06;transform:rotate(12deg);pointer-events:none}
+.challenge-title{display:flex;align-items:center;gap:14px}
+.challenge-bolt{font-size:2.8rem;color:#a44aff;text-shadow:0 0 24px #782aff}
+.challenge-title h2{font-size:1.4rem;letter-spacing:-.04em;margin:0}
+.challenge-title p{margin:5px 0 0;color:#c2b6d8;font-size:.87rem}
+.challenge-controls{display:flex;align-items:center;gap:8px;min-width:260px}
+.challenge-controls select{min-width:130px;padding:11px 10px;font-size:.8rem}
+.challenge-controls button{white-space:nowrap;font-size:.8rem;padding:12px}
+.challenge-content{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.challenge-content .panel{padding:17px}
+.challenge-card{background:linear-gradient(135deg,rgba(43,24,74,.85),rgba(15,12,31,.9));border:1px solid rgba(150,115,218,.22);padding:16px;border-radius:15px;margin:11px 0;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+.challenge-card p{margin:10px 0;color:#e0d8f0;line-height:1.5}
+.challenge-card .answer{display:block;width:100%;text-align:left;margin:8px 0}
+.section-title{margin:22px 0 8px;font-size:1rem}
 .top,.head{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.top{color:#b5c5e9;font-size:.9rem}
-.track{background:rgba(122,143,190,.18);height:9px;border-radius:99px;margin:17px 0 26px;overflow:hidden}
-.track div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--violet),var(--cyan));border-radius:inherit;box-shadow:0 0 14px rgba(112,147,255,.5);transition:width .3s ease}
 #question{font-size:1.55rem;line-height:1.35;letter-spacing:-.035em;margin-bottom:20px}
-#scoreLive{color:#b5a5ff;font-weight:900}
+#scoreLive{color:#c5a2ff;font-weight:900}
 #answers{display:grid;gap:10px}
 .answer{display:block;text-align:left;width:100%;margin:0;min-height:54px;padding:14px 16px}
-.answer:hover:not(:disabled){border-color:rgba(111,206,229,.6);background:rgba(42,72,105,.88)}
+.answer:hover:not(:disabled){border-color:rgba(111,206,255,.6);background:rgba(42,58,105,.88)}
 .answer.correct{background:rgba(18,117,82,.3);border-color:var(--green);color:#b8ffe4}
 .answer.wrong{background:rgba(145,43,73,.3);border-color:var(--red);color:#ffd0d9}
 .answer:disabled{cursor:default}
 .compact{font-size:.9rem;padding:11px 13px;min-height:42px}
-.list{padding:0;list-style:none;margin:12px 0 0}
-.list li{
-  display:flex;justify-content:space-between;align-items:center;gap:10px;
-  background:rgba(34,49,82,.55);border:1px solid rgba(145,165,220,.09);
-  padding:13px;border-radius:14px;margin-bottom:9px;min-width:0;
-}
-.list li:last-child{margin-bottom:0}
-.list li>div{min-width:0}
-.list li b{font-weight:800;overflow-wrap:anywhere}
-.list small{display:block;color:#93a4c6;font-size:.78rem;margin-top:4px}
-.list strong{white-space:nowrap;color:#c3caff;font-weight:900}
-.rank-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.rank-card{
-  min-width:0;padding:14px;border-radius:17px;border:1px solid rgba(132,158,225,.13);
-  background:linear-gradient(145deg,rgba(26,41,73,.76),rgba(13,23,45,.78));
-}
-.rank-card h3{font-size:.93rem;margin:2px 0 12px;letter-spacing:-.01em}
-.rank-card .list{margin:0}
-.rank-card .list li{padding:10px;font-size:.84rem;background:rgba(8,15,31,.42);margin-bottom:7px}
-.rank-card .list small{font-size:.72rem}
-.rank-card .list strong{font-size:.8rem}
-.challenge-card{
-  background:linear-gradient(135deg,rgba(31,49,84,.85),rgba(16,29,54,.9));
-  border:1px solid rgba(122,156,230,.19);padding:16px;border-radius:16px;margin:11px 0;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
-}
-.challenge-card p{margin:10px 0;color:#d5def2;line-height:1.5}
-.challenge-card .answer{margin:8px 0}
-.section-title{margin:22px 0 8px;font-size:1rem}
-.account{
-  display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px;
-  padding:20px 24px;background:linear-gradient(105deg,rgba(39,52,91,.86),rgba(17,29,54,.95));
-}
-.account strong{
-  display:inline-flex;align-items:center;margin-top:7px;padding:7px 12px;border-radius:999px;
-  border:1px solid rgba(132,156,255,.3);background:rgba(104,126,231,.14);color:#dce4ff;
-  font-size:1rem;letter-spacing:.02em;
-}
-.account .status{margin:7px 0 0}
-.small{font-size:.8rem;padding:10px 13px}
+#game .track{height:9px;margin:17px 0 26px}
+#game .track div{transition:width .3s ease}
 #finish{text-align:center}
-#finalScore{font-size:1.2rem;font-weight:900;color:#d7dfff}
+#finalScore{font-size:1.2rem;font-weight:900;color:#e0d4ff}
 #myRecordsStatus,#rankingStatus,#liveRankingStatus,#challengeStatus{margin:9px 0}
-#setup .primary,#createChallenge{min-height:49px}
-footer{text-align:center;padding:30px 12px 16px;color:#6f7fa2;font-size:.78rem;letter-spacing:.04em}
-@media(max-width:850px){
-  .layout{grid-template-columns:1fr}
-  .shell{padding:25px 16px 18px}
-  .stack{gap:15px}
+#saveStatus,#challengeCreateStatus{margin:10px 0;min-height:1.2em}
+#setup .primary,#createChallenge{min-height:48px}
+footer{text-align:center;padding:22px 10px 5px;color:#746a8a;font-size:.75rem;letter-spacing:.04em}
+@media(max-width:1320px){
+  .app-frame{grid-template-columns:210px minmax(0,1fr);gap:17px;padding:12px}
+  .workspace-grid{grid-template-columns:minmax(0,1fr) 290px;gap:14px}
+  .hero{padding:25px;min-height:300px}
+  .category-card{min-height:158px;padding:12px}
 }
-@media(max-width:520px){
-  .shell{padding:18px 12px}
-  header{margin:10px 0 23px}
-  header h1{font-size:3.25rem}
-  header p{font-size:.9rem}
-  header .label{font-size:.58rem;letter-spacing:.12em}
-  .panel{padding:19px;border-radius:18px}
-  #authView{padding:23px!important}
-  .rank-grid{grid-template-columns:1fr}
-  .head{align-items:flex-start}
-  .head h2{font-size:1.1rem}
-  .account{padding:17px}
+@media(max-width:1050px){
+  .workspace-grid{grid-template-columns:1fr}
+  .right-rail{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+  .rank-panel{grid-row:span 2}
+  .hero h1{font-size:4.1rem}
+}
+@media(max-width:760px){
+  .app-frame{display:block;padding:10px}
+  .sidebar{position:relative;top:auto;height:auto;min-height:0;padding:12px;margin-bottom:15px;border-radius:18px}
+  .brand{padding:0 4px 10px}
+  .brand-mark{width:42px;height:42px;font-size:26px}
+  .brand-name{font-size:1.1rem}
+  .nav-label,.sidebar-spacer,.sidebar-promo{display:none}
+  .nav{display:flex;gap:5px;overflow-x:auto;padding-bottom:2px}
+  .nav a,.nav button{width:auto;flex:0 0 auto;min-height:40px;padding:8px 10px;font-size:.78rem}
+  .nav a span,.nav button span{width:auto}
+  .page-body{padding:0}
+  .hero{grid-template-columns:1fr minmax(120px,.7fr);padding:23px 19px;min-height:250px}
+  .hero h1{font-size:clamp(2.7rem,8vw,4rem)}
+  .hero-copy p{font-size:.9rem}
+  .hero-art{min-height:180px}
+  .brain-symbol{font-size:7rem}
+  .brain-orbit{width:180px;height:180px}
+  .brain-glow{width:160px;height:160px}
+  .iq-tag{font-size:2rem}
+  .category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .right-rail{grid-template-columns:1fr}
+  .rank-panel{grid-row:auto}
+}
+@media(max-width:500px){
+  .hero{grid-template-columns:1fr;gap:0;padding:24px 19px 14px}
+  .hero-art{min-height:150px}
+  .brain-symbol{font-size:6.6rem}
+  .brain-orbit{width:155px;height:155px}
+  .brain-glow{width:140px;height:140px}
+  .brain-float.one{left:23%}
+  .brain-float.two{right:20%}
+  .hero-copy p{margin-bottom:16px}
+  .hero .primary{width:100%;min-width:0}
+  .category-grid{gap:8px}
+  .category-card{min-height:145px}
+  .challenge-banner{grid-template-columns:1fr;padding:20px}
+  .challenge-controls{min-width:0;flex-direction:column;align-items:stretch}
+  .challenge-controls select,.challenge-controls button{width:100%}
+  .challenge-content{grid-template-columns:1fr}
+  .right-rail{gap:12px}
+  .section-panel,.panel{padding:17px;border-radius:17px}
+  #authView{margin:5vh 12px 0;padding:24px}
+  .rank-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .top,.head{align-items:flex-start}
   #question{font-size:1.3rem}
 }
 @media(prefers-reduced-motion:reduce){
@@ -166,57 +275,148 @@ footer{text-align:center;padding:30px 12px 16px;color:#6f7fa2;font-size:.78rem;l
 }
 </style>
 </head>
-<body><main class="shell">
-<header><div class="label">⚡ JUEGA, RETA Y RESPONDE EN VIVO</div><h1>🏆 Quiz<span>Battle</span></h1><p>Compite con otros jugadores desde cualquier dispositivo.</p></header>
-<section id="authView" class="panel" style="max-width:460px;margin:0 auto">
-<div id="loginPanel">
-  <div class="label">ACCESO DE JUGADORES</div><h2>Inicia sesión</h2>
-  <p class="muted">Entra con tu nombre de usuario y contraseña.</p>
-  <label for="loginUsername">Nombre de usuario</label><input id="loginUsername" type="text" autocomplete="username" placeholder="Ej. anonimo">
-  <label for="loginPassword">Contraseña</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Tu contraseña">
-  <button id="loginBtn" class="primary">Entrar a QuizBattle →</button>
-  <button id="showRegisterBtn" class="secondary" style="width:100%;margin-top:10px">Crear cuenta nueva</button>
-</div>
-<div id="registerPanel" class="hidden">
-  <div class="label">NUEVO JUGADOR</div><h2>Crea tu cuenta</h2>
-  <p class="muted">El correo se utiliza para registrar y verificar la cuenta. Después entrarás usando solo tu nombre de usuario.</p>
-  <label for="registerEmail">Correo electrónico</label><input id="registerEmail" type="email" autocomplete="email" placeholder="tu-correo@ejemplo.com">
-  <label for="registerUsername">Crea tu nombre de usuario</label><input id="registerUsername" type="text" minlength="3" maxlength="20" autocomplete="nickname" placeholder="Ej. Anonimo">
-  <p class="muted">Usa de 3 a 20 letras, números o guion bajo. No se puede repetir.</p>
-  <label for="registerPassword">Crea una contraseña</label><input id="registerPassword" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
-  <button id="registerBtn" class="primary">Crear cuenta →</button>
-  <button id="backToLoginBtn" class="secondary" style="width:100%;margin-top:10px">Volver al inicio de sesión</button>
-</div>
-<p id="authStatus" class="status" role="status"></p>
-</section>
-<section id="appView" class="hidden">
-<div class="account panel"><div><div class="label">TU NOMBRE EN QUIZBATTLE</div><strong id="userDisplay"></strong><p id="profileStatus" class="status"></p></div><button id="logoutBtn" class="secondary small">Cerrar sesión</button></div>
-<div class="layout">
-<div class="stack">
-<section id="setup" class="panel"><div class="label">PARTIDA INDIVIDUAL</div><h2>Juega y mejora tu récord</h2>
-<label for="category">Categoría</label><select id="category"><option value="futbol">⚽ Fútbol</option><option value="cultura">🌎 Cultura general</option><option value="ciencia">🔬 Ciencia</option><option value="videojuegos">🎮 Videojuegos</option></select>
-<button id="start" class="primary">Iniciar partida →</button></section>
-<section id="game" class="panel hidden"><div class="top"><span id="progress"></span><strong id="scoreLive"></strong></div><div class="track"><div id="bar"></div></div><h2 id="question"></h2><div id="answers"></div><p id="feedback" aria-live="polite"></p></section>
-<section id="finish" class="panel hidden"><div class="label">PARTIDA FINALIZADA</div><h2>🏆 ¡Buen trabajo!</h2><p id="finalScore"></p><p id="saveStatus" class="status" role="status"></p><button id="again" class="primary">Jugar otra vez</button></section>
-<section class="panel"><div class="label">DESAFÍA A OTRO JUGADOR</div><h2>Crea un desafío</h2><p class="muted">Publica una pregunta. Otro jugador podrá verla y responder desde su pantalla.</p>
-<label for="challengeCategory">Categoría del desafío</label><select id="challengeCategory"><option value="futbol">⚽ Fútbol</option><option value="cultura">🌎 Cultura general</option><option value="ciencia">🔬 Ciencia</option><option value="videojuegos">🎮 Videojuegos</option></select>
-<button id="createChallenge" class="primary">Publicar desafío →</button><p id="challengeCreateStatus" class="status" role="status"></p></section>
-</div>
-<aside class="stack">
-<section class="panel"><div class="label">TU CUENTA</div><h2>⭐ Tus mejores puntuaciones</h2><p id="myRecordsStatus" class="status"></p><ol id="myRecords" class="list"></ol></section>
-<section class="panel"><div class="head"><div><div class="label">CLASIFICACIONES</div><h2>🏅 Rankings por categoría</h2></div><button id="refresh" class="secondary small">↻ Actualizar</button></div>
-<p id="rankingStatus" class="status"></p>
-<div class="rank-grid">
-  <article class="rank-card"><h3>⚽ Fútbol</h3><ol id="ranking-futbol" class="list"></ol></article>
-  <article class="rank-card"><h3>🔬 Ciencia</h3><ol id="ranking-ciencia" class="list"></ol></article>
-  <article class="rank-card"><h3>🎮 Videojuegos</h3><ol id="ranking-videojuegos" class="list"></ol></article>
-  <article class="rank-card"><h3>🌎 Cultura general</h3><ol id="ranking-cultura" class="list"></ol></article>
-</div></section>
-<section class="panel"><div class="label">DESAFÍOS EN VIVO</div><h2>⚡ Ranking de duelos</h2>
-<p id="liveRankingStatus" class="status"></p><ol id="liveRanking" class="list"></ol>
-<p class="muted">Cada respuesta correcta suma 100 puntos. Esta clasificación es independiente de las partidas individuales.</p></section>
-<section class="panel"><div class="label">EN VIVO</div><h2>Desafíos disponibles</h2><p id="challengeStatus" class="status"></p><div id="openChallenges"></div>
-<h3 class="section-title">Tus desafíos</h3><div id="myChallenges"><p class="muted">Todavía no has creado desafíos.</p></div></section>
-</aside></div></section>
-<footer>QuizBattle · Proyecto 2 · USFQ</footer>
-</main><script type="module" src="./app.js"></script></body></html>
+<body>
+<main class="app-frame">
+  <aside class="sidebar" aria-label="Navegación principal">
+    <div class="brand"><div class="brand-mark">Q</div><div class="brand-name">Quiz<span>Battle</span></div></div>
+    <div class="nav-label">MENÚ PRINCIPAL</div>
+    <nav class="nav">
+      <a class="active" href="#dashboardStart"><span>⌂</span> Inicio</a>
+      <a href="#rankingPanel"><span>🏆</span> Rankings</a>
+      <a href="#livePanel"><span>⚡</span> Desafíos en vivo</a>
+      <a href="#profileCard"><span>♙</span> Perfil</a>
+      <button id="logoutBtn" type="button"><span>↪</span> Cerrar sesión</button>
+    </nav>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-promo"><div class="crown">♛</div><strong>¿Estás listo para el desafío?</strong><p>Demuestra lo que sabes.</p></div>
+  </aside>
+
+  <div class="page-body">
+    <section id="authView">
+      <div id="loginPanel">
+        <div class="label">ACCESO DE JUGADORES</div><h2>Inicia sesión</h2>
+        <p class="muted">Entra con tu nombre de usuario y contraseña.</p>
+        <label for="loginUsername">Nombre de usuario</label><input id="loginUsername" type="text" autocomplete="username" placeholder="Ej. anonimo">
+        <label for="loginPassword">Contraseña</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Tu contraseña">
+        <button id="loginBtn" class="primary" type="button" style="width:100%;margin-top:18px">Entrar a QuizBattle →</button>
+        <button id="showRegisterBtn" class="secondary" type="button" style="width:100%;margin-top:10px">Crear cuenta nueva</button>
+      </div>
+      <div id="registerPanel" class="hidden">
+        <div class="label">NUEVO JUGADOR</div><h2>Crea tu cuenta</h2>
+        <p class="muted">El correo se utiliza para registrar y verificar la cuenta. Después entrarás usando solo tu nombre de usuario.</p>
+        <label for="registerEmail">Correo electrónico</label><input id="registerEmail" type="email" autocomplete="email" placeholder="tu-correo@ejemplo.com">
+        <label for="registerUsername">Crea tu nombre de usuario</label><input id="registerUsername" type="text" minlength="3" maxlength="20" autocomplete="nickname" placeholder="Ej. Anonimo">
+        <p class="muted">Usa de 3 a 20 letras, números o guion bajo. No se puede repetir.</p>
+        <label for="registerPassword">Crea una contraseña</label><input id="registerPassword" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+        <button id="registerBtn" class="primary" type="button" style="width:100%;margin-top:18px">Crear cuenta →</button>
+        <button id="backToLoginBtn" class="secondary" type="button" style="width:100%;margin-top:10px">Volver al inicio de sesión</button>
+      </div>
+      <p id="authStatus" class="status" role="status"></p>
+    </section>
+
+    <section id="appView" class="hidden">
+      <div class="workspace-grid">
+        <div class="main-column">
+          <div id="setup">
+            <section class="hero" id="dashboardStart">
+              <div class="hero-copy">
+                <div class="hero-kicker">⚡ JUEGA · RETA · SUPÉRATE</div>
+                <h1>Quiz<span>Battle</span></h1>
+                <p>Demuestra tus conocimientos, compite y conviértete en el mejor.</p>
+                <button id="start" class="primary" type="button">▶ &nbsp; Jugar ahora &nbsp; ❯</button>
+              </div>
+              <div class="hero-art" aria-label="Cerebro luminoso con símbolo IQ">
+                <div class="brain-glow"></div><div class="brain-orbit"></div>
+                <div class="brain-float one">✧</div><div class="brain-float two">♜</div><div class="brain-float three">?</div>
+                <div class="brain-symbol" aria-hidden="true">🧠</div><div class="iq-tag">IQ</div>
+              </div>
+            </section>
+
+            <section class="section-panel" style="margin-top:17px">
+              <div class="section-heading"><div><div class="label">PON A PRUEBA TU MENTE</div><h2><span class="accent-mark"></span>Selecciona una categoría</h2></div></div>
+              <div class="category-grid" role="group" aria-label="Categorías de QuizBattle">
+                <button class="category-card selected" type="button" data-category="futbol" aria-pressed="true"><span class="cat-icon">⚽</span><strong>Fútbol</strong><small>Pon a prueba tu pasión</small><span class="arrow">➜</span></button>
+                <button class="category-card" type="button" data-category="ciencia" aria-pressed="false"><span class="cat-icon">⚛️</span><strong>Ciencia</strong><small>Explora y aprende</small><span class="arrow">➜</span></button>
+                <button class="category-card" type="button" data-category="videojuegos" aria-pressed="false"><span class="cat-icon">🎮</span><strong>Videojuegos</strong><small>Demuestra tu gamer interior</small><span class="arrow">➜</span></button>
+                <button class="category-card" type="button" data-category="cultura" aria-pressed="false"><span class="cat-icon">🌎</span><strong>Cultura general</strong><small>¿Cuánto sabes del mundo?</small><span class="arrow">➜</span></button>
+              </div>
+              <label class="sr-only" for="category">Categoría</label>
+              <select id="category" class="sr-only" tabindex="-1" aria-hidden="true">
+                <option value="futbol">Fútbol</option><option value="ciencia">Ciencia</option><option value="videojuegos">Videojuegos</option><option value="cultura">Cultura general</option>
+              </select>
+            </section>
+          </div>
+
+          <section id="game" class="panel hidden">
+            <div class="top"><span id="progress"></span><strong id="scoreLive"></strong></div>
+            <div class="track"><div id="bar"></div></div><h2 id="question"></h2><div id="answers"></div><p id="feedback" aria-live="polite"></p>
+          </section>
+          <section id="finish" class="panel hidden">
+            <div class="label">PARTIDA FINALIZADA</div><h2>🏆 ¡Buen trabajo!</h2><p id="finalScore"></p><p id="saveStatus" class="status" role="status"></p><button id="again" class="primary" type="button">Jugar otra vez</button>
+          </section>
+
+          <section class="challenge-banner" id="livePanel">
+            <div class="challenge-title"><div class="challenge-bolt">ϟ</div><div><h2>Desafíos en vivo</h2><p>Compite en tiempo real con otros jugadores.</p><p id="challengeCreateStatus" class="status" role="status"></p></div></div>
+            <div class="challenge-controls">
+              <label class="sr-only" for="challengeCategory">Categoría del desafío</label>
+              <select id="challengeCategory"><option value="futbol">⚽ Fútbol</option><option value="cultura">🌎 Cultura general</option><option value="ciencia">🔬 Ciencia</option><option value="videojuegos">🎮 Videojuegos</option></select>
+              <button id="createChallenge" class="primary" type="button">Crear desafío →</button>
+            </div>
+          </section>
+
+          <section class="challenge-content">
+            <div class="panel"><div class="label">JUEGA CONTRA OTROS</div><h2>Desafíos disponibles</h2><p id="challengeStatus" class="status"></p><div id="openChallenges"></div></div>
+            <div class="panel"><div class="label">TUS PARTIDAS</div><h2>Mis desafíos</h2><div id="myChallenges"><p class="muted">Todavía no has creado desafíos.</p></div></div>
+          </section>
+        </div>
+
+        <aside class="right-rail">
+          <section class="profile-card" id="profileCard">
+            <div class="profile-heading">🏆 &nbsp; Tu perfil</div>
+            <div class="profile-main"><div class="avatar" aria-hidden="true">🕶️</div><div><div id="userDisplay" class="profile-name"></div><div class="profile-level">Jugador QuizBattle</div></div></div>
+            <p id="profileStatus" class="status profile-status"></p>
+            <div class="account-actions"><button id="logoutBtnProfile" class="secondary small" type="button" style="display:none">Cerrar sesión</button></div>
+          </section>
+
+          <section class="section-panel rank-panel" id="rankingPanel">
+            <div class="section-heading"><div><div class="label">COMPITE POR EL PRIMER LUGAR</div><h2>📊 Ranking rápido</h2></div><button id="refresh" class="secondary small" type="button">↻</button></div>
+            <p id="rankingStatus" class="status"></p>
+            <div class="rank-grid">
+              <article class="rank-card"><h3>⚽ Fútbol</h3><ol id="ranking-futbol" class="list"></ol></article>
+              <article class="rank-card"><h3>🔬 Ciencia</h3><ol id="ranking-ciencia" class="list"></ol></article>
+              <article class="rank-card"><h3>🎮 Videojuegos</h3><ol id="ranking-videojuegos" class="list"></ol></article>
+              <article class="rank-card"><h3>🌎 Cultura general</h3><ol id="ranking-cultura" class="list"></ol></article>
+            </div>
+          </section>
+
+          <section class="panel record-panel">
+            <div class="label">TUS MEJORES RESULTADOS</div><h2>⭐ Tus récords</h2><p id="myRecordsStatus" class="status"></p><ol id="myRecords" class="list"></ol>
+          </section>
+
+          <section class="panel">
+            <div class="label">DUELOS ENTRE JUGADORES</div><h2>⚡ Ranking de desafíos</h2><p id="liveRankingStatus" class="status"></p><ol id="liveRanking" class="list"></ol>
+            <p class="muted">Cada respuesta correcta suma 100 puntos. Esta clasificación es independiente de las partidas individuales.</p>
+          </section>
+        </aside>
+      </div>
+    </section>
+    <footer>QuizBattle · Proyecto 2 · USFQ</footer>
+  </div>
+</main>
+<script type="module" src="./app.js"></script>
+<script>
+document.querySelectorAll('.category-card[data-category]').forEach(card=>{
+  card.addEventListener('click',()=>{
+    const selected=card.dataset.category;
+    const select=document.getElementById('category');
+    select.value=selected;
+    document.querySelectorAll('.category-card[data-category]').forEach(item=>{
+      const active=item===card;
+      item.classList.toggle('selected',active);
+      item.setAttribute('aria-pressed',String(active));
+    });
+  });
+});
+</script>
+</body>
+</html>
