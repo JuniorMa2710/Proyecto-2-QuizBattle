@@ -3,7 +3,7 @@
 Aplicación de preguntas y desafíos para varios usuarios. Cada persona inicia sesión con una cuenta ficticia, guarda su mejor puntaje por categoría y puede responder desafíos publicados por otra persona.
 
 ## Cómo funciona
-1. El jugador crea su cuenta con correo, contraseña y un nombre de usuario único; después inicia sesión con sus credenciales.
+1. Un jugador nuevo se registra con correo, contraseña y un nombre de usuario único. Después inicia sesión únicamente con su nombre de usuario y contraseña.
 2. Puede jugar una partida individual de cinco preguntas. Cada respuesta correcta vale 100 puntos.
 3. Su mejor resultado por categoría se guarda asociado a su cuenta y se muestra con su nombre de usuario.
 4. Puede publicar un desafío de una pregunta. Otro usuario lo ve desde su dispositivo y responde.
@@ -12,6 +12,7 @@ Aplicación de preguntas y desafíos para varios usuarios. Cada persona inicia s
 ## Tecnologías
 - HTML, CSS y JavaScript.
 - Supabase Auth para las sesiones.
+- Supabase Edge Function `username-login` para validar el nombre de usuario y obtener la sesión sin mostrar el correo en el inicio de sesión.
 - Supabase PostgreSQL y Row Level Security (RLS) para guardar y proteger los datos.
 - Supabase Realtime para sincronizar desafíos y respuestas.
 - GitHub para el repositorio público y Vercel para publicar la aplicación.
@@ -26,12 +27,14 @@ Aplicación de preguntas y desafíos para varios usuarios. Cada persona inicia s
 
 ## Configuración de Supabase
 1. La migración de `supabase.sql` ya está aplicada en el proyecto QuizBattle. Si se instala en otro proyecto, ejecutar el archivo una sola vez.
-2. En la pantalla de acceso, usar **Crear cuenta nueva** para registrar cada usuario con correo, contraseña y un nombre de usuario único de 3 a 20 caracteres (letras, números o guion bajo). El sistema no permite nombres repetidos, aunque cambien mayúsculas/minúsculas.
-3. Si Supabase tiene activa la confirmación de correo, usar correos a los que se tenga acceso y confirmar el mensaje recibido antes de iniciar sesión. Si se desactiva la confirmación sólo para la demostración, pueden usarse correos ficticios.
-4. Abrir una segunda sesión en otro navegador o ventana privada para probar la interacción entre dos usuarios.
+2. En la pantalla de acceso, usar **Crear cuenta nueva** para registrar correo, contraseña y un nombre de usuario único de 3 a 20 caracteres (letras, números o guion bajo). El sistema no permite nombres repetidos, aunque cambien mayúsculas/minúsculas.
+3. Una vez registrada la cuenta, iniciar sesión con el nombre de usuario y la contraseña. El correo sólo se usa al crear y verificar la cuenta.
+4. La Edge Function `username-login` debe estar desplegada con `verify_jwt = false`, porque se llama antes de iniciar sesión. La función usa las claves secretas únicamente en el servidor; nunca deben añadirse al navegador ni al repositorio.
+5. Si Supabase tiene activa la confirmación de correo, usar correos a los que se tenga acceso y confirmar el mensaje recibido antes de iniciar sesión.
+6. Abrir una segunda sesión en otro navegador o ventana privada para probar la interacción entre dos usuarios.
 
 ## Enlaces
-- Aplicación de prueba: https://quizbattle-proyecto2-jmajebih3-oscarerubio55-5263.vercel.app
+- Aplicación de prueba: https://quizbattle-proyecto2-khpv3j5h5-oscarerubio55-5263.vercel.app
 - Repositorio: https://github.com/JuniorMa2710/Proyecto-2-QuizBattle
 - Rama de Proyecto 2: https://github.com/JuniorMa2710/Proyecto-2-QuizBattle/tree/proyecto-2-auth-duelos
 - Pull request de revisión: https://github.com/JuniorMa2710/Proyecto-2-QuizBattle/pull/1
