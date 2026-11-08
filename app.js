@@ -49,24 +49,46 @@ function mostrarApp(user) {
     conectarTiempoReal();
   }
 }
+function mostrarFormularioLogin() {
+  $('loginPanel').classList.remove('hidden');
+  $('registerPanel').classList.add('hidden');
+  $('authStatus').textContent = '';
+  $('authStatus').classList.remove('error');
+}
+function mostrarFormularioRegistro() {
+  $('loginPanel').classList.add('hidden');
+  $('registerPanel').classList.remove('hidden');
+  $('authStatus').textContent = '';
+  $('authStatus').classList.remove('error');
+}
 function mostrarLogin() {
   usuario = null;
   usuarioActivoId = null;
   if (canal) { db.removeChannel(canal); canal = null; }
   $('appView').classList.add('hidden');
   $('authView').classList.remove('hidden');
+  mostrarFormularioLogin();
 }
 async function entrar() {
-  const email = $('email').value.trim(), password = $('password').value;
-  if (!email || !password) return aviso('authStatus','Escribe tu correo y contraseña.',true);
+  const username = $('loginUsername').value.trim().toLowerCase();
+  const password = $('loginPassword').value;
+  if (!username || !password) return aviso('authStatus','Escribe tu nombre de usuario y contraseña.',true);
   aviso('authStatus','Ingresando…');
-  const { error } = await db.auth.signInWithPassword({ email, password });
-  if (error) aviso('authStatus',error.message,true);
+  const { data, error } = await db.functions.invoke('username-login', {
+    body: { username, password }
+  });
+  if (error || !data?.session?.access_token || !data?.session?.refresh_token) {
+    aviso('authStatus','Nombre de usuario o contraseña incorrectos.',true);
+    return;
+  }
+  const { error: sessionError } = await db.auth.setSession(data.session);
+  if (sessionError) aviso('authStatus','No se pudo iniciar sesión. Inténtalo de nuevo.',true);
 }
 async function registrarse() {
-  const email = $('email').value.trim(), password = $('password').value;
-  const username = $('username').value.trim();
-  if (!email || !password || !username) return aviso('authStatus','Completa correo, contraseña y nombre de usuario.',true);
+  const email = $('registerEmail').value.trim();
+  const password = $('registerPassword').value;
+  const username = $('registerUsername').value.trim().toLowerCase();
+  if (!email || !password || !username) return aviso('authStatus','Completa el correo, la contraseña y el nombre de usuario.',true);
   if (password.length < 6) return aviso('authStatus','La contraseña debe tener al menos 6 caracteres.',true);
   if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) return aviso('authStatus','El nombre debe tener 3 a 20 caracteres: letras, números o guion bajo.',true);
   aviso('authStatus','Creando tu cuenta…');
@@ -76,8 +98,11 @@ async function registrarse() {
     options: { data: { username } }
   });
   if (error) { aviso('authStatus',error.message,true); return; }
-  if (data.session) aviso('authStatus','✅ Cuenta creada. Tu nombre de usuario es @'+username+'.');
-  else aviso('authStatus','✅ Cuenta creada. Revisa tu correo para confirmar el registro y después inicia sesión.');
+  if (data.session) {
+    aviso('authStatus','✅ Cuenta creada. Tu nombre en QuizBattle es @'+username+'.');
+  } else {
+    aviso('authStatus','✅ Cuenta creada. Confirma tu correo y luego entra con @'+username+' y tu contraseña.');
+  }
 }
 async function guardarPuntaje() {
   aviso('saveStatus','Guardando tu mejor puntuación…');
@@ -290,8 +315,12 @@ async function responderReto(reto,opcion,boton) {
 }
 async function salir() { await db.auth.signOut(); mostrarLogin(); }
 $('loginBtn').onclick=entrar;
+$('showRegisterBtn').onclick=mostrarFormularioRegistro;
+$('backToLoginBtn').onclick=mostrarFormularioLogin;
 $('registerBtn').onclick=registrarse;
-$('password').addEventListener('keydown',e=>{if(e.key==='Enter') entrar();});
+$('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter') entrar();});
+$('loginUsername').addEventListener('keydown',e=>{if(e.key==='Enter') entrar();});
+$('registerPassword').addEventListener('keydown',e=>{if(e.key==='Enter') registrarse();});
 $('logoutBtn').onclick=salir;
 $('start').onclick=iniciarPartida;
 $('again').onclick=()=>{$('finish').classList.add('hidden');$('setup').classList.remove('hidden');};
