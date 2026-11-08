@@ -266,3 +266,132 @@ begin
     execute 'alter publication supabase_realtime add table public.resultados';
   end if;
 end $$;
+
+
+-- Proyecto 2: perfiles con username único y tablas de clasificación independientes.
+-- Esta sección se puede ejecutar después de la configuración inicial.
+
+create table if not exists public.perfiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  username text not null,
+  created_at timestamptz not null default now(),
+  constraint perfiles_username_formato check (username ~ '^[A-Za-z0-9_]{3,20}$')
+);
+create unique index if not exists perfiles_username_unico on public.perfiles (lower(username));
+
+with base_users as (
+  select u.id,
+    coalesce(nullif(left(regexp_replace(lower(split_part(coalesce(u.email, ''), '@', 1)), '[^a-z0-9_]', '', 'g'), 20), ''), 'jugador') as base_name
+  from auth.users u
+  left join public.perfiles p on p.user_id = u.id
+  where p.user_id is null
+),
+ranked as (
+  select id, base_name, row_number() over (partition by lower(base_name) order by id) as rn
+  from base_users
+)
+insert into public.perfiles(user_id, username)
+select id, case when rn = 1 and length(base_name) >= 3 then base_name
+                else left(base_name, 12) || '_' || left(replace(id::text, '-', ''), 7) end
+from ranked
+on conflict (user_id) do nothing;
+
+alter table public.perfiles enable row level security;
+revoke all on table public.perfiles from anon, authenticated;
+grant select on table public.perfiles to authenticated;
+drop policy if exists "nombres visibles para usuarios" on public.perfiles;
+create policy "nombres visibles para usuarios"
+  on public.perfiles for select to authenticated using (true);
+
+create or replace function public.crear_perfil_al_registrar()
+returns trigger language plpgsql security definer set search_path = ''
+as $$
+declare
+  v_username text := pg_catalog.btrim(coalesce(new.raw_user_meta_data ->> 'username', ''));
+begin
+  if v_username !~ '^[A-Za-z0-9_]{3,20}$' then
+    raise exception 'El nombre de usuario debe tener entre 3 y 20 caracteres: letras, números o guion bajo.';
+  end if;
+  insert into public.perfiles(user_id, username) values (new.id, v_username);
+  return new;
+exception when unique_violation then
+  raise exception 'Ese nombre de usuario ya está ocupado. Elige otro.';
+end;
+$$;
+revoke all on function public.crear_perfil_al_registrar() from public, anon, authenticated;
+drop trigger if exists crear_perfil_despues_registro on auth.users;
+create trigger crear_perfil_despues_registro after insert on auth.users
+for each row execute function public.crear_perfil_al_registrar();
+
+alter table public.resultados drop constraint if exists resultados_usuario_id_perfiles_fkey;
+alter table public.resultados add constraint resultados_usuario_id_perfiles_fkey
+  foreign key (usuario_id) references public.perfiles(user_id) on delete cascade;
+alter table public.retos drop constraint if exists retos_creador_id_perfiles_fkey;
+alter table public.retos add constraint retos_creador_id_perfiles_fkey
+  foreign key (creador_id) references public.perfiles(user_id) on delete cascade;
+alter table public.respuestas drop constraint if exists respuestas_usuario_id_perfiles_fkey;
+alter table public.respuestas add constraint respuestas_usuario_id_perfiles_fkey
+  foreign key (usuario_id) references public.perfiles(user_id) on delete cascade;
+
+create or replace function public.guardar_mejor_resultado(p_categoria text, p_aciertos integer)
+returns void language plpgsql security invoker set search_path = public
+as $$
+declare
+  v_usuario uuid := auth.uid();
+  v_nombre text;
+begin
+  if v_usuario is null then raise exception 'Debes iniciar sesión'; end if;
+  if p_categoria is null or p_categoria not in ('futbol','cultura','ciencia','videojuegos')
+     or p_aciertos is null or p_aciertos not between 0 and 5 then raise exception 'Datos inválidos'; end if;
+  select username into v_nombre from public.perfiles where user_id = v_usuario;
+  if v_nombre is null then raise exception 'No se encontró tu nombre de usuario'; end if;
+  insert into public.resultados(jugador, categoria, aciertos, puntos, usuario_id)
+  values (left(v_nombre, 24), p_categoria, p_aciertos, p_aciertos * 100, v_usuario)
+  on conflict (usuario_id, categoria) where usuario_id is not null
+  do update set jugador=excluded.jugador, aciertos=excluded.aciertos, puntos=excluded.puntos, fecha=now()
+  where excluded.puntos > public.resultados.puntos;
+end;
+$$;
+revoke all on function public.guardar_mejor_resultado(text, integer) from public, anon;
+grant execute on function public.guardar_mejor_resultado(text, integer) to authenticated;
+
+create table if not exists public.puntuacion_desafios (
+  usuario_id uuid primary key references public.perfiles(user_id) on delete cascade,
+  puntos integer not null default 0 check (puntos >= 0),
+  correctas integer not null default 0 check (correctas >= 0),
+  respuestas integer not null default 0 check (respuestas >= 0),
+  updated_at timestamptz not null default now()
+);
+alter table public.puntuacion_desafios enable row level security;
+revoke all on table public.puntuacion_desafios from anon, authenticated;
+grant select on table public.puntuacion_desafios to authenticated;
+drop policy if exists "ranking desafios visible" on public.puntuacion_desafios;
+create policy "ranking desafios visible" on public.puntuacion_desafios
+  for select to authenticated using (true);
+
+create or replace function public.acumular_puntos_desafio()
+returns trigger language plpgsql security definer set search_path = ''
+as $$
+begin
+  insert into public.puntuacion_desafios(usuario_id,puntos,correctas,respuestas,updated_at)
+  values (new.usuario_id, case when new.es_correcta then 100 else 0 end,
+          case when new.es_correcta then 1 else 0 end, 1, pg_catalog.now())
+  on conflict (usuario_id) do update set
+    puntos = public.puntuacion_desafios.puntos + excluded.puntos,
+    correctas = public.puntuacion_desafios.correctas + excluded.correctas,
+    respuestas = public.puntuacion_desafios.respuestas + 1,
+    updated_at = pg_catalog.now();
+  return new;
+end;
+$$;
+revoke all on function public.acumular_puntos_desafio() from public, anon, authenticated;
+drop trigger if exists sumar_puntos_despues_respuesta on public.respuestas;
+create trigger sumar_puntos_despues_respuesta after insert on public.respuestas
+for each row execute function public.acumular_puntos_desafio();
+
+do $$
+begin
+  if not exists (select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename='puntuacion_desafios') then
+    execute 'alter publication supabase_realtime add table public.puntuacion_desafios';
+  end if;
+end $$;
