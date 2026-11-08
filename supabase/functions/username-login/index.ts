@@ -80,7 +80,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const userPayload = await userResponse.json();
-    const email = userPayload?.user?.email;
+    const email = userPayload?.email;
     if (!email) return jsonResponse({ error: "Nombre de usuario o contraseña incorrectos." }, 401);
 
     const tokenResponse = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
