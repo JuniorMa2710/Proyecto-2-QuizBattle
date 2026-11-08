@@ -24,9 +24,15 @@ button{cursor:pointer;font:inherit;font-weight:700;border:0;border-radius:11px;p
 .list{padding:0;list-style:none}.list li{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#22314f;padding:12px;border-radius:10px;margin-bottom:8px}
 .list small{display:block;color:#a0b5d3}.list strong{white-space:nowrap;color:#b4c5ff}
 .challenge-card{background:#22314f;border:1px solid #405577;padding:14px;border-radius:13px;margin:10px 0}
+.rank-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.rank-card{background:#101b34;border:1px solid #344866;border-radius:13px;padding:12px;min-width:0}
+.rank-card h3{font-size:1rem;margin:3px 0 10px}
+.rank-card .list{margin:0}
+.rank-card .list li{padding:10px;font-size:.9rem}
+.rank-card .list small{font-size:.75rem}
 .challenge-card p{margin:10px 0;color:#d2dcf0}.section-title{margin:18px 0 8px}.account{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .small{font-size:.82rem;padding:9px 12px}footer{text-align:center;padding:26px;color:#92a4c5;font-size:.8rem}
-@media(max-width:760px){.layout{grid-template-columns:1fr}.panel{padding:19px}}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.panel{padding:19px}.rank-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body><main class="shell">
@@ -36,10 +42,12 @@ button{cursor:pointer;font:inherit;font-weight:700;border:0;border-radius:11px;p
 <p class="muted">Entra con el correo y la contraseña de tu cuenta de prueba.</p>
 <label for="email">Correo electrónico</label><input id="email" type="email" autocomplete="username" placeholder="ana@prueba.com">
 <label for="password">Contraseña</label><input id="password" type="password" autocomplete="current-password" placeholder="Tu contraseña">
+<label for="username">Nombre de usuario único (solo al crear cuenta)</label><input id="username" type="text" minlength="3" maxlength="20" autocomplete="nickname" placeholder="Ej. Junior10">
+<p class="muted">Usa de 3 a 20 letras, números o guion bajo. No se puede repetir.</p>
 <button id="loginBtn" class="primary">Entrar a QuizBattle →</button><button id="registerBtn" class="secondary" style="width:100%;margin-top:10px">Crear cuenta nueva</button><p id="authStatus" class="status" role="status"></p>
 </section>
 <section id="appView" class="hidden">
-<div class="account panel"><div><div class="label">SESIÓN ACTIVA</div><strong id="userEmail"></strong></div><button id="logoutBtn" class="secondary small">Cerrar sesión</button></div>
+<div class="account panel"><div><div class="label">TU NOMBRE EN QUIZBATTLE</div><strong id="userDisplay"></strong><p id="profileStatus" class="status"></p></div><button id="logoutBtn" class="secondary small">Cerrar sesión</button></div>
 <div class="layout">
 <div class="stack">
 <section id="setup" class="panel"><div class="label">PARTIDA INDIVIDUAL</div><h2>Juega y mejora tu récord</h2>
@@ -53,8 +61,17 @@ button{cursor:pointer;font:inherit;font-weight:700;border:0;border-radius:11px;p
 </div>
 <aside class="stack">
 <section class="panel"><div class="label">TU CUENTA</div><h2>⭐ Tus mejores puntuaciones</h2><p id="myRecordsStatus" class="status"></p><ol id="myRecords" class="list"></ol></section>
-<section class="panel"><div class="head"><div><div class="label">COMPETICIÓN</div><h2>🏅 Ranking global</h2></div><button id="refresh" class="secondary small">↻ Actualizar</button></div>
-<p id="rankingStatus" class="status"></p><ol id="ranking" class="list"></ol></section>
+<section class="panel"><div class="head"><div><div class="label">CLASIFICACIONES</div><h2>🏅 Rankings por categoría</h2></div><button id="refresh" class="secondary small">↻ Actualizar</button></div>
+<p id="rankingStatus" class="status"></p>
+<div class="rank-grid">
+  <article class="rank-card"><h3>⚽ Fútbol</h3><ol id="ranking-futbol" class="list"></ol></article>
+  <article class="rank-card"><h3>🔬 Ciencia</h3><ol id="ranking-ciencia" class="list"></ol></article>
+  <article class="rank-card"><h3>🎮 Videojuegos</h3><ol id="ranking-videojuegos" class="list"></ol></article>
+  <article class="rank-card"><h3>🌎 Cultura general</h3><ol id="ranking-cultura" class="list"></ol></article>
+</div></section>
+<section class="panel"><div class="label">DESAFÍOS EN VIVO</div><h2>⚡ Ranking de duelos</h2>
+<p id="liveRankingStatus" class="status"></p><ol id="liveRanking" class="list"></ol>
+<p class="muted">Cada respuesta correcta suma 100 puntos. Esta clasificación es independiente de las partidas individuales.</p></section>
 <section class="panel"><div class="label">EN VIVO</div><h2>Desafíos disponibles</h2><p id="challengeStatus" class="status"></p><div id="openChallenges"></div>
 <h3 class="section-title">Tus desafíos</h3><div id="myChallenges"><p class="muted">Todavía no has creado desafíos.</p></div></section>
 </aside></div></section>
