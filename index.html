@@ -1,3 +1,79 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>QuizBattle | Laboratorio 4</title><style>
-:root{font-family:system-ui,Arial;color:#ecf2ff;background:#0b1224}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#293f78,#0b1224 65%);min-height:100vh}.shell{max-width:1060px;margin:auto;padding:32px 16px}header{text-align:center;margin:20px 0 38px}h1{font-size:clamp(3rem,7vw,5rem);letter-spacing:-.06em;margin:10px}h1 span{color:#9faaff}header p,.muted{color:#b5c2dc}.chips{display:flex;justify-content:center;flex-wrap:wrap;gap:8px}.chips span{padding:8px 12px;border:1px solid #455374;background:#202d49;border-radius:99px;font-size:.82rem}.layout{display:grid;grid-template-columns:1.15fr .85fr;gap:20px}.panel{background:#17223b;border:1px solid #354462;border-radius:20px;padding:25px;box-shadow:0 15px 50px #0002}h2{margin-top:6px}.label{font-size:.75rem;letter-spacing:.16em;font-weight:800;color:#8bb0ff}label{display:block;margin:17px 0 8px;font-weight:600}input,select{width:100%;padding:13px;font:inherit;background:#0d1730;border:1px solid #526484;color:white;border-radius:11px}button{cursor:pointer;font:inherit;font-weight:700;border:0;border-radius:11px;padding:13px 16px}.primary{color:white;background:linear-gradient(110deg,#5a76f2,#864dcf);width:100%;margin-top:20px}.secondary,.answer{background:#253554;color:#f2f5ff;border:1px solid #526486}.answer{display:block;text-align:left;width:100%;margin:10px 0;min-height:52px}.answer.correct{background:#12553d;border-color:#50d69b}.answer.wrong{background:#6b2841;border-color:#ff86a2}.answer:disabled{cursor:default}.hidden{display:none}.top{display:flex;justify-content:space-between;gap:8px;color:#b0c3e4}.track{background:#32425e;height:9px;border-radius:8px;margin:15px 0 25px;overflow:hidden}.track div{height:100%;width:0;background:#9b88ff}.head{display:flex;justify-content:space-between;align-items:center;gap:8px}.small{font-size:.8rem;padding:9px}.list{padding:0;list-style:none}.list li{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#22314f;padding:12px;border-radius:10px;margin-bottom:8px}.list small{display:block;color:#a0b5d3}.list strong{white-space:nowrap;color:#b4c5ff}.status{font-size:.87rem;color:#b4c7e9}footer{text-align:center;padding:26px;color:#92a4c5;font-size:.8rem}@media(max-width:760px){.layout{grid-template-columns:1fr}.panel{padding:20px}}
-</style></head><body><main class="shell"><header><div class="label">⚡ DESAFÍO MULTIJUGADOR</div><h1>🏆 Quiz<span>Battle</span></h1><p>Responde preguntas, consigue puntos y supera a tus amigos.</p><div class="chips"><span>🎯 5 preguntas</span><span>🏅 Ranking compartido</span><span>🌍 Desde cualquier dispositivo</span></div></header><div class="layout"><div><section id="setup" class="panel"><div class="label">NUEVA PARTIDA</div><h2>¿Listo para competir?</h2><label for="player">Nombre inventado del jugador</label><input id="player" maxlength="24" placeholder="Ej. Futbolero99"><label for="category">Categoría</label><select id="category"><option value="futbol">⚽ Fútbol</option><option value="cultura">🌎 Cultura general</option><option value="ciencia">🔬 Ciencia</option><option value="videojuegos">🎮 Videojuegos</option></select><button class="primary" id="start">Iniciar batalla →</button><p class="muted">Para las pruebas utiliza nombres ficticios y no compartas datos personales.</p></section><section id="game" class="panel hidden"><div class="top"><span id="progress"></span><strong id="scoreLive"></strong></div><div class="track"><div id="bar"></div></div><h2 id="question"></h2><div id="answers"></div><p id="feedback" aria-live="polite"></p></section><section id="finish" class="panel hidden"><div class="label">PARTIDA FINALIZADA</div><h2>🏆 ¡Buen trabajo!</h2><p id="finalScore"></p><p id="saveStatus" class="status" role="status"></p><button id="retry" class="secondary hidden">Reintentar guardado</button><button id="again" class="primary">Jugar otra vez</button></section></div><aside class="panel"><div class="head"><div><div class="label">COMPETICIÓN</div><h2>🏅 Ranking global</h2></div><button id="refresh" class="secondary small">↻ Actualizar</button></div><p id="rankingStatus" class="status"></p><ol id="ranking" class="list"></ol><p class="muted">Los resultados se consultan desde Supabase. Actualiza para ver las partidas de tus amigos.</p></aside></div><footer>QuizBattle · Proyecto 2 · Laboratorio 4</footer></main><script type="module" src="./app.js"></script></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QuizBattle | Proyecto 2</title>
+<style>
+:root{font-family:system-ui,Arial,sans-serif;color:#edf2ff;background:#0b1224}*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#293f78,#0b1224 65%);min-height:100vh}
+.shell{max-width:1120px;margin:auto;padding:28px 16px}
+header{text-align:center;margin:14px 0 28px}h1{font-size:clamp(2.8rem,7vw,4.8rem);letter-spacing:-.06em;margin:8px}
+h1 span{color:#9faaff}header p,.muted{color:#b5c2dc}.label{font-size:.75rem;letter-spacing:.16em;font-weight:800;color:#8bb0ff}
+.panel{background:#17223b;border:1px solid #354462;border-radius:20px;padding:24px;box-shadow:0 15px 50px #0002}
+.layout{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.stack{display:grid;gap:18px}
+h2{margin:7px 0 16px}label{display:block;margin:15px 0 7px;font-weight:650}
+input,select{width:100%;padding:13px;font:inherit;background:#0d1730;border:1px solid #526484;color:white;border-radius:11px}
+button{cursor:pointer;font:inherit;font-weight:700;border:0;border-radius:11px;padding:12px 15px}
+.primary{color:white;background:linear-gradient(110deg,#5a76f2,#864dcf);width:100%;margin-top:18px}
+.secondary,.answer{background:#253554;color:#f2f5ff;border:1px solid #526486}
+.answer{display:block;text-align:left;width:100%;margin:9px 0;min-height:48px}.answer.correct{background:#12553d;border-color:#50d69b}.answer.wrong{background:#6b2841;border-color:#ff86a2}
+.answer:disabled{cursor:default;opacity:.75}.compact{font-size:.9rem;padding:10px;min-height:40px}
+.hidden{display:none!important}.muted,.status{color:#aebfdd;font-size:.9rem}.error{color:#ff9cae}
+.top,.head{display:flex;justify-content:space-between;align-items:center;gap:10px}.top{color:#b0c3e4}
+.track{background:#32425e;height:9px;border-radius:8px;margin:15px 0 25px;overflow:hidden}.track div{height:100%;width:0;background:#9b88ff}
+.list{padding:0;list-style:none}.list li{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#22314f;padding:12px;border-radius:10px;margin-bottom:8px}
+.list small{display:block;color:#a0b5d3}.list strong{white-space:nowrap;color:#b4c5ff}
+.challenge-card{background:#22314f;border:1px solid #405577;padding:14px;border-radius:13px;margin:10px 0}
+.rank-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.rank-card{background:#101b34;border:1px solid #344866;border-radius:13px;padding:12px;min-width:0}
+.rank-card h3{font-size:1rem;margin:3px 0 10px}
+.rank-card .list{margin:0}
+.rank-card .list li{padding:10px;font-size:.9rem}
+.rank-card .list small{font-size:.75rem}
+.challenge-card p{margin:10px 0;color:#d2dcf0}.section-title{margin:18px 0 8px}.account{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.small{font-size:.82rem;padding:9px 12px}footer{text-align:center;padding:26px;color:#92a4c5;font-size:.8rem}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.panel{padding:19px}.rank-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body><main class="shell">
+<header><div class="label">⚡ JUEGA, RETA Y RESPONDE EN VIVO</div><h1>🏆 Quiz<span>Battle</span></h1><p>Compite con otros jugadores desde cualquier dispositivo.</p></header>
+<section id="authView" class="panel" style="max-width:460px;margin:0 auto">
+<div class="label">ACCESO DE JUGADORES</div><h2>Inicia sesión</h2>
+<p class="muted">Entra con el correo y la contraseña de tu cuenta de prueba.</p>
+<label for="email">Correo electrónico</label><input id="email" type="email" autocomplete="username" placeholder="ana@prueba.com">
+<label for="password">Contraseña</label><input id="password" type="password" autocomplete="current-password" placeholder="Tu contraseña">
+<label for="username">Nombre de usuario único (solo al crear cuenta)</label><input id="username" type="text" minlength="3" maxlength="20" autocomplete="nickname" placeholder="Ej. Junior10">
+<p class="muted">Usa de 3 a 20 letras, números o guion bajo. No se puede repetir.</p>
+<button id="loginBtn" class="primary">Entrar a QuizBattle →</button><button id="registerBtn" class="secondary" style="width:100%;margin-top:10px">Crear cuenta nueva</button><p id="authStatus" class="status" role="status"></p>
+</section>
+<section id="appView" class="hidden">
+<div class="account panel"><div><div class="label">TU NOMBRE EN QUIZBATTLE</div><strong id="userDisplay"></strong><p id="profileStatus" class="status"></p></div><button id="logoutBtn" class="secondary small">Cerrar sesión</button></div>
+<div class="layout">
+<div class="stack">
+<section id="setup" class="panel"><div class="label">PARTIDA INDIVIDUAL</div><h2>Juega y mejora tu récord</h2>
+<label for="category">Categoría</label><select id="category"><option value="futbol">⚽ Fútbol</option><option value="cultura">🌎 Cultura general</option><option value="ciencia">🔬 Ciencia</option><option value="videojuegos">🎮 Videojuegos</option></select>
+<button id="start" class="primary">Iniciar partida →</button></section>
+<section id="game" class="panel hidden"><div class="top"><span id="progress"></span><strong id="scoreLive"></strong></div><div class="track"><div id="bar"></div></div><h2 id="question"></h2><div id="answers"></div><p id="feedback" aria-live="polite"></p></section>
+<section id="finish" class="panel hidden"><div class="label">PARTIDA FINALIZADA</div><h2>🏆 ¡Buen trabajo!</h2><p id="finalScore"></p><p id="saveStatus" class="status" role="status"></p><button id="again" class="primary">Jugar otra vez</button></section>
+<section class="panel"><div class="label">DESAFÍA A OTRO JUGADOR</div><h2>Crea un desafío</h2><p class="muted">Publica una pregunta. Otro jugador podrá verla y responder desde su pantalla.</p>
+<label for="challengeCategory">Categoría del desafío</label><select id="challengeCategory"><option value="futbol">⚽ Fútbol</option><option value="cultura">🌎 Cultura general</option><option value="ciencia">🔬 Ciencia</option><option value="videojuegos">🎮 Videojuegos</option></select>
+<button id="createChallenge" class="primary">Publicar desafío →</button><p id="challengeCreateStatus" class="status" role="status"></p></section>
+</div>
+<aside class="stack">
+<section class="panel"><div class="label">TU CUENTA</div><h2>⭐ Tus mejores puntuaciones</h2><p id="myRecordsStatus" class="status"></p><ol id="myRecords" class="list"></ol></section>
+<section class="panel"><div class="head"><div><div class="label">CLASIFICACIONES</div><h2>🏅 Rankings por categoría</h2></div><button id="refresh" class="secondary small">↻ Actualizar</button></div>
+<p id="rankingStatus" class="status"></p>
+<div class="rank-grid">
+  <article class="rank-card"><h3>⚽ Fútbol</h3><ol id="ranking-futbol" class="list"></ol></article>
+  <article class="rank-card"><h3>🔬 Ciencia</h3><ol id="ranking-ciencia" class="list"></ol></article>
+  <article class="rank-card"><h3>🎮 Videojuegos</h3><ol id="ranking-videojuegos" class="list"></ol></article>
+  <article class="rank-card"><h3>🌎 Cultura general</h3><ol id="ranking-cultura" class="list"></ol></article>
+</div></section>
+<section class="panel"><div class="label">DESAFÍOS EN VIVO</div><h2>⚡ Ranking de duelos</h2>
+<p id="liveRankingStatus" class="status"></p><ol id="liveRanking" class="list"></ol>
+<p class="muted">Cada respuesta correcta suma 100 puntos. Esta clasificación es independiente de las partidas individuales.</p></section>
+<section class="panel"><div class="label">EN VIVO</div><h2>Desafíos disponibles</h2><p id="challengeStatus" class="status"></p><div id="openChallenges"></div>
+<h3 class="section-title">Tus desafíos</h3><div id="myChallenges"><p class="muted">Todavía no has creado desafíos.</p></div></section>
+</aside></div></section>
+<footer>QuizBattle · Proyecto 2 · USFQ</footer>
+</main><script type="module" src="./app.js"></script></body></html>
